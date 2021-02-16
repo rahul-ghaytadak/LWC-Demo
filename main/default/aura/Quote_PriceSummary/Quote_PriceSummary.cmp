@@ -1,0 +1,178 @@
+<aura:component controller="Create_Quote_Controller" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global">
+    <!-- call doInit method on component load -->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:method name="getPS" action="{!c.getSelectedPS}"/>
+     <aura:attribute name="selectedPriceId" type="String"/> 
+	<aura:attribute name="listOfAllPS" type="list"/> 
+    <aura:attribute name="selectedTabsoft" type="string" default="Price" description="Use for show/hide arraow sign on header based on conditions"/>
+    <aura:attribute name="arrowDirection" type="string" default="arrowup" description="Use for change arrow sign direction on header based on click"/>
+    <aura:attribute name="selectedPS" type="list"/> 
+    <aura:attribute name="PaginationList" type="list"/> 
+    <aura:attribute name="selectedCount" type="integer" default="0"
+                    description="selected Records Count"/>
+	<aura:attribute name="recordId" type="string"/> 
+    <aura:attribute name="startPage" type="Integer" />
+    <aura:attribute name="endPage" type="Integer"/>
+    <aura:attribute name="totalRecordsCount" type="Integer"/>
+    <aura:attribute name="pageSize" type="Integer" default="{!v.totalRecordsCount}"
+                    description="number of records to be display on per page"/>
+    <aura:attribute name="spinner" type="boolean" default = "false"/>    
+    <aura:attribute name="currentPage" type="integer" default="1"/>
+    <aura:attribute name="totalPagesCount" type="integer"/>
+    <aura:attribute name="bNoRecordsFound" type="boolean"/>
+    <aura:attribute name="sort" type="String" default="DESC"/>
+    <aura:attribute name="AverageLoadFactor" type="decimal"/>
+     <aura:attribute name="currentPageNumber" type="Integer" default="1"/>
+    <aura:attribute name="totalPages" type="Integer" default="0"/>
+    <aura:attribute name="pageList" type="List"/>    
+    <aura:attribute name="selectedstoreVolumn" type="string" />
+    <aura:if isTrue="{!v.bNoRecordsFound}">
+        <!--display error message if there is no records available -->
+		<div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info" role="alert">
+            <span class="slds-assistive-text">error</span>
+            <h2>No record found.</h2>
+        </div>
+        <aura:set attribute="else">
+             <div class="slds-page-header" role="banner" style="margin-top: -17px;padding-top: 15px;padding-bottom: 15px;">
+                <div class="slds-grid">
+                    <div class="slds-col slds-has-flexi-truncate">
+                        <div class="slds-media slds-no-space slds-grow">
+                            <div class="slds-media__figure">
+                                <lightning:icon iconName="custom:custom67" size="small"/>
+                            </div>
+                            <div class="slds-media__body" style=" font-size:14px; padding-top: 3px">
+                                <b>Terms ({!v.listOfAllPS.length})</b>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+		 <!-- lightning:button to get selected rows data -->
+        <aura:if isTrue="{!v.spinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading...</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+        <!-- data table start-->  
+            <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                    <thead>
+                        <tr class="">
+                            <!--header checkbox for select all-->
+                            <th style="width:3.25rem;" class="slds-text-align_right">
+                                <div class="slds-form-element">
+                                    <div class="slds-form-element__control">
+                                        <label class="slds-checkbox">
+                                            <ui:inputCheckbox disabled="{!v.totalRecordsCount == 0}"
+                                                              aura:id="selectAllId"
+                                                              change="{!c.selectAllCheckbox}"/>
+                                            <span class="slds-checkbox_faux"></span>
+                                            <span class="slds-form-element__label"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </th>
+                             
+                             <th style="width:33.33%;" class="slds-is-sortable " scope="col" onclick="{!c.sortByTerm}">
+                                <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
+                                    <span class="slds-assistive-text">Sort</span>
+                                    <span class="slds-truncate" title="Name">Term</span>  
+                                    <aura:if isTrue="{! and(v.arrowDirection == 'arrowdown', v.selectedTabsoft == 'Term') }">&nbsp;  &#9660; </aura:if>  
+                                    <aura:if isTrue="{! and(v.arrowDirection != 'arrowdown', v.selectedTabsoft == 'Term') }"> &nbsp;  &#9650; </aura:if>                        
+                                </a>
+                            </th>
+                             <th style="width:33.33%;" class="slds-is-sortable " scope="col" onclick="{!c.sortByPrice}">
+                                <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
+                                    <span class="slds-assistive-text">Sort</span>
+                                    <span class="slds-truncate" title="Name">Price</span>  
+                                    <aura:if isTrue="{! and(v.arrowDirection == 'arrowdown', v.selectedTabsoft == 'Price') }">&nbsp;  &#9660; </aura:if>  
+                                    <aura:if isTrue="{! and(v.arrowDirection != 'arrowdown', v.selectedTabsoft == 'Price') }"> &nbsp;  &#9650; </aura:if>                        
+                                </a>
+                            </th>
+                            <th style="width:33.33%;" class="slds-is-sortable " scope="col" onclick="{!c.sortByVol}">
+                                <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
+                                    <span class="slds-assistive-text">Sort</span>
+                                    <span class="slds-truncate" title="Name">Volume(kWh)</span>  
+                                    <aura:if isTrue="{! and(v.arrowDirection == 'arrowdown', v.selectedTabsoft == 'Volume') }">&nbsp;  &#9660; </aura:if>  
+                                    <aura:if isTrue="{! and(v.arrowDirection != 'arrowdown', v.selectedTabsoft == 'Volume') }"> &nbsp;  &#9650; </aura:if>                        
+                                </a>
+                            </th>
+                        </tr>
+                </thead>
+                <tbody>
+                    <aura:iteration items="{!v.PaginationList}" var="obj">
+                            <tr>
+                                <th scope="row" class="slds-text-align_right" style="width:3.25rem;">
+                                    <div class="slds-form-element">
+                                        <div class="slds-form-element__control">
+                                            <label class="slds-checkbox">
+                                                <ui:inputCheckbox text="{!obj.objAccount.Id}"
+                                                                  value="{!obj.isChecked}"
+                                                                  change="{!c.checkboxSelect}"/>
+                                                <span class="slds-checkbox_faux"></span>
+                                                <span class="slds-form-element__label text"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </th>
+                                
+                                <th  style = "padding-left:2%"  scope="row">
+                                    <div  class="slds-truncate" title="{!obj.Term_months__c}">
+                                        <lightning:formattedNumber value = "{!obj.objAccount.Term_months__c}"/>
+                                    </div>
+                                </th> 
+                                <th style = "padding-left:2%" scope="row">
+                                    <div class="slds-truncate" title="{!obj.Base_Price__c}">
+                                        <lightning:formattedNumber value = "{!obj.objAccount.Base_Price__c}" maximumFractionDigits="5" minimumFractionDigits="5" style="currency"/>
+                                    </div>
+                                </th>
+                                <th style = "padding-left:2%" scope="row">
+                                    <div  style = "padding-left: 5px;"  class="slds-truncate" title="{!obj.Cumulative_Volume__c}">
+                                        <lightning:formattedNumber value = "{!obj.objAccount.Cumulative_Volume__c}"/>
+                                    </div>
+                                </th>
+                            </tr>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+             <!-- DataTable End -->
+            <!--  Pagination Buttons Start -->
+        <lightning:layoutItem padding="around-small" flexibility="auto" class = "slds-align_absolute-center">
+            <lightning:button label="First" iconName="utility:left" iconPosition="left"
+                              onclick="{!c.onFirst}" disabled="{! v.currentPageNumber == 1}"/>
+            <lightning:button iconName="utility:chevronleft" iconPosition="left"
+                              onclick="{!c.onPrev}" disabled="{! v.currentPageNumber == 1}"/>
+             <button value = "1"  onclick="{!c.onFirst}" disabled="{!item=='...'}" class="{!if(v.currentPageNumber==1,'slds-button slds-button_brand','slds-button slds-button_neutral')}"   data-record="1" name="1" onmousedown="{!c.currentPage}"   >
+                 <ui:outputNumber value="1"/>
+            </button>
+            <aura:iteration items="{!v.pageList}" var="item">
+                <button value = "{!item}"  onclick="{!c.processMe}" disabled="{!item=='...'}" class="{!if(v.currentPageNumber==item,'slds-button slds-button_brand','slds-button slds-button_neutral')}"   data-record="{!num}" name="{!num}" onmousedown="{!c.currentPage}"   >
+                    {!item}
+                </button>
+            </aura:iteration>
+            <lightning:button iconName="utility:chevronright" iconPosition="right" 
+                              disabled="{! v.currentPageNumber == v.totalPages}" onclick="{!c.onNext}"/>
+            <lightning:button label="Last" iconName="utility:right" iconPosition="right" 
+                              disabled="{! v.currentPageNumber == v.totalPages}" onclick="{!c.onLast}"/>
+            
+            <lightning:formattedText class = "slds-m-left--small slds-m-right--small" value="Show Records: " />
+            <lightning:select  required="false"  value = "{!v.pageSize}" onchange="{! c.changePageSize }">
+                <option value="{!v.listOfAllPS.length}">All</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+            </lightning:select>
+        </lightning:layoutItem>  
+        <!--  Pagination Buttons End -->
+            <footer class="slds-card__footer" style="padding-top: 15px;">
+                <a class="slds-card__footer-action" href="javascript:void(0);" onclick = "{!c.gotoRelatedList}">View All
+                    <span class="slds-assistive-text">Price Summarries</span>
+                </a>
+            </footer>
+        </aura:set> 
+    </aura:if>
+</aura:component>

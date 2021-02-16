@@ -1,0 +1,78 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId" access="global" controller="Create_Quote_Controller" >
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="spinner" type="boolean" default="FALSE"/>
+    <aura:attribute name="screen1" type="boolean" default = "true"/>
+    <aura:attribute name="screen2" type="boolean" default = "false"/>
+    <aura:attribute name="screen3" type="boolean" default = "false"/>
+    <aura:attribute name="EarliestDateWarning" type="boolean" default = "false"/>
+    <aura:attribute name="recordId" type="string"/> 
+    <aura:attribute name="AverageLoadFactor" type="decimal"/>
+    <aura:attribute name="selectedCount" type="integer" default="0"
+                    description="selected Records Count"/>
+    <aura:attribute name="listOfAllAccounts" type="list"/> 
+    <aura:attribute name="selectedPS" type="list"/> 
+	<aura:attribute name="listOfAllPS" type="list"/> 
+    <aura:attribute name="checkOldPrice" type="boolean" default="false"/>
+    <aura:attribute name="confirmation" type="boolean" default="true"/>
+    <aura:attribute name="oppRecord" type="Object"/>
+    <aura:attribute name="recordLoadError" type="String"/>
+    <aura:attribute name="selectedPriceId" type="String" />   
+    <aura:attribute name="showUA" type="boolean" default="false"/>
+    <aura:attribute name="selectedstoreVolumn" type="string" />
+    
+    <force:recordData aura:id="recordLoader"
+                      recordId="{!v.recordId}"
+                      fields="StageName"
+                      targetFields="{!v.oppRecord}"
+                      targetError="{!v.recordLoadError}"
+                      />
+    <lightning:card  title = "" >
+        
+        <aura:if isTrue="{!v.screen1}">
+            <c:CreateQuote AverageLoadFactor = "{!v.AverageLoadFactor}" recordId = "{!v.recordId}" EarliestDateWarning = "{!v.EarliestDateWarning}" showUA = "{!v.showUA}" selectedCount ="{!v.selectedCount}" listOfAllAccounts = "{!v.listOfAllAccounts}" checkOldPrice = "{!v.checkOldPrice}" confirmation = "{!v.confirmation}" selectedPriceId="{!v.selectedPriceId}"/>
+               <!--aura:if isTrue="{!v.checkOldPrice}">
+                    <span class = "slds-align_absolute-center">
+                        <ui:inputCheckbox class="myCheckbox" aura:id="checkbox" change="{!c.confirmation}" label="&nbsp; I confirm that I wish to proceed with the old Price data."  value="false"/>
+                    </span>
+                </aura:if-->
+             <aura:if isTrue="{!v.showUA == false}">
+                   <span style = "float: right; margin-right: 25px; margin-top: -30px;"> 
+                       <lightning:button label="Next"
+                                         disabled="{!v.selectedCount == 0 || v.EarliestDateWarning == true || v.oppRecord.StageName == 'Contracting' || v.oppRecord.StageName == 'Closed Won' || v.oppRecord.StageName == 'Closed Lost'}"
+                                         class = "slds-button_brand"        
+                                         onclick="{!c.gotoScreen2}"
+                                         name="next"/>
+                   </span>
+            </aura:if>
+        </aura:if>
+        <aura:if isTrue="{!v.screen2}">
+            <c:Quote_PriceSummary AverageLoadFactor = "{!v.AverageLoadFactor}" aura:id="compB" selectedPriceId = "{!v.selectedPriceId}" recordId = "{!v.recordId}" selectedCount ="{!v.selectedCount}" listOfAllPS ="{!v.listOfAllPS}" selectedPS = "{!v.selectedPS}" selectedstoreVolumn="{!v.selectedstoreVolumn}"/>
+             
+                <span style = "float:left;margin-top: -29px;margin-left: 25px;"> 
+                <lightning:button label="Previous"
+                                  class = "slds-button_brand"        
+                                  onclick="{!c.gotoScreen1}"
+                                  name="left"/> 
+                </span>
+                <span style = "float: right;margin-right: 25px;margin-top: -29px;"> 
+                    <lightning:button label="Next"
+                                      class = "slds-button_brand"        
+                                      onclick="{!c.gotoScreen3}"
+                                      name="next"/>
+                </span>
+        </aura:if>
+        <aura:if isTrue="{!v.screen3}">
+            <c:Quote_Margins AverageLoadFactor = "{!v.AverageLoadFactor}" recordId = "{!v.recordId}" listOfAllPS = "{!v.selectedPS}" selectedPriceId="{!v.selectedPriceId}" selectedstoreVolumn="{!v.selectedstoreVolumn}"/>
+            <div>
+                <span style = "margin-left: 25px;"> 
+                <lightning:button label="Previous"
+                                  class = "slds-button_brand"        
+                                  onclick="{!c.gotoScreen2From3}"
+                                  name="left"/> 
+                </span>
+               
+            </div>
+        </aura:if>
+    </lightning:card>    
+</aura:component>

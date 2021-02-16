@@ -1,0 +1,52 @@
+<!--* @Purpose: This Vf component is used to get Price Request Id from Price_Request_Test email template using VF Component .
+* @Author: Akanksha Pandharkame
+* @CreatedDate: 11/20/2019
+* @Related Code: 
+* @Test Class:
+* @LastModifiedDate:
+* @LastModifiedBy:
+*-->
+<apex:component controller="PricingRequestForVFEmailTemplate" access="global"  >
+    
+    <apex:attribute name="prIdValue" description="Attribute for Pricing Request Id" type="String" assignTo="{!prId}" />
+    <p>
+       <strong>Start Dates are {!prReq.Start_Dates__c}.</strong> 
+    </p>
+    
+    <br /><b>Voluntary RECs : </b>{!prReq.Voluntary_RECs__c}<br />
+    <apex:outputPanel rendered="{!IF(prReq.Treatment__c != null, true, false)}">
+        <b>Voluntary RECs % : </b>{!prReq.Voluntary_RECs_percent__c}
+        <br /><b>Treatment : </b>{!prReq.Treatment__c}<br /> 
+    </apex:outputPanel>
+    
+    
+    <br />
+    
+    <table border="0" >
+        <tr>
+            <th>Sales Reference</th><th>Customer Name</th><th>Account Number</th><th>Utility Name</th><th>Product</th><th>Start Date</th><th>Due Date</th><th>Request Type</th><th>Opportunity Type</th><th>Bill Type</th><th>Broker Name</th>
+        </tr>
+        <apex:repeat var="uao" value="{!lstUAO}">
+            <tr>
+                <td>{!uao.Pricing_Request__r.Opportunity__r.Opportunity_ID__c}</td>
+                <td>{!uao.Pricing_Request__r.Opportunity__r.Account.Name}</td>
+                <td>{!uao.Utility_Account__r.Name}</td>
+                <td>{!uao.Utility_Account__r.Utility__r.Name}</td>
+                <td>{!product}</td>
+                <td><apex:outputText value="{0, date,M/dd/yyyy}">
+                    <apex:param value="{!uao.Start_Date__c}"/>
+                    </apex:outputText>
+                </td>
+                <td><apex:outputText value="{0, date,M/dd/yyyy}">
+                    <apex:param value="{!DueDate}"/>
+                    </apex:outputText>
+                </td>
+                <td>{!requestType}</td>
+                <td>{!uao.Pricing_Request__r.Opportunity_Type__c}</td>
+                <td>{!BillType}</td>
+                <td>{!uao.Pricing_Request__r.Opportunity__r.Broker__r.Name}</td>                    
+            </tr>
+        </apex:repeat> 
+    </table>
+    
+</apex:component>

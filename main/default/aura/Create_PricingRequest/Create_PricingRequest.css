@@ -1,0 +1,13 @@
+.THIS .hidden-table:hover {
+     background-color: white !important;
+ }
+
+.THIS .abc:hover svg{
+    fill:#8B0000;
+    cursor:pointer;
+}
+.THIS .slds-form-element__control .slds-radio, .THIS .slds-form-element__control .slds-checkbox {
+    display: flex !important;
+    padding: 4px 0 4px 21px!important;
+
+}

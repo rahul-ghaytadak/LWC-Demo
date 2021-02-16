@@ -1,0 +1,15 @@
+.THIS .leftPaddingClass {
+    padding-left: 2rem;
+}
+ 
+.THIS .pillSize{
+ width:100%;
+}
+
+.THIS .slds-form-element__help{
+    color:red;
+}
+
+.THIS .abc{
+    overflow-y: scroll !important;
+}

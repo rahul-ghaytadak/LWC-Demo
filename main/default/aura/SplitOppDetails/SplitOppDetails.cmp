@@ -1,0 +1,108 @@
+<aura:component controller="SplitOpportunity" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader" access="global" >
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler event="force:refreshView" action="{!c.doInit}" />
+    
+    <aura:attribute name="showSpinner" type="Boolean" default="false" />
+    <aura:attribute name="recordId" type="String"/>	
+    <aura:attribute name="parentOpptyList" type="list" />
+    <aura:attribute name="siblingOpptyList" type="list" />
+    <aura:attribute name="childOpptyList" type="list" />
+    
+    <aura:if isTrue="{!v.showSpinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container" >
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading...</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+    <div class="slds-page-header slds-page-header_record-home" style="padding: 0 !important;">
+    <div class="slds-page-header__row slds-p-around_small" style="border-bottom: 1px solid #dddbda;">
+        <div class="slds-page-header__col-title">
+            <div class="slds-media">
+                <div class="slds-media__figure">
+                    <lightning:icon iconName="standard:opportunity_splits" size="small"/>
+                </div>
+                <div class="slds-media__body" style="font-size:14px; padding-top: 3px">
+                    <div class="slds-page-header__name">
+                        <div class="slds-page-header__name-title">
+                            <b>Split Opportunity Details</b>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <aura:if isTrue = "{!v.parentOpptyList.length > 0}">
+        <table class="slds-text-color_weak slds-table slds-table_cell-buffer">
+            <thead>
+                <tr >
+                    <th>
+                        <lightning:icon iconName="utility:hierarchy" size="X-small"/>&nbsp;&nbsp;Parent Opportunity
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <aura:iteration items="{!v.parentOpptyList}" var = "item" indexVar="index">
+                    <tr>
+                        <td>
+                            <div class="slds-truncate" title="">
+                                <a href="{!'/one/one.app?#/sObject/'+ item.Id + '/view'}" target="_blank"> {!item.Name}</a>
+                            </div>
+                        </td>
+                    </tr>
+                </aura:iteration>
+            </tbody>
+        </table>
+    </aura:if>
+    <aura:if isTrue = "{!v.siblingOpptyList.length > 0}">
+        <table class="slds-text-color_weak slds-table slds-table_cell-buffer">
+            <thead>
+                <tr >
+                    <th>
+                     <lightning:icon iconName="utility:hierarchy" size="X-small"/>&nbsp;&nbsp;Sibling Opportunities
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <aura:iteration items="{!v.siblingOpptyList}" var = "item" indexVar="index">
+                    <tr>
+                        <td>
+                            <div class="slds-truncate" title="">
+                                <a href="{!'/one/one.app?#/sObject/'+ item.Id + '/view'}" target="_blank"> {!item.Name}</a>
+                            </div>
+                        </td>
+                    </tr>
+                </aura:iteration>
+            </tbody>
+        </table>
+    </aura:if>
+    
+    <aura:if isTrue = "{!v.childOpptyList.length > 0}">
+        <table class="slds-text-color_weak slds-table slds-table_cell-buffer">
+            <thead>
+                <tr >
+                    <th>
+                        <lightning:icon iconName="utility:hierarchy" size="X-small"/>&nbsp;&nbsp;Child Opportunities
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <aura:iteration items="{!v.childOpptyList}" var = "item" indexVar="index">
+                    <tr>
+                        <td>
+                            <div class="slds-truncate" title="">
+                             <a href="{!'/one/one.app?#/sObject/'+ item.Id + '/view'}" target="_blank"> {!item.Name}</a>
+                            </div>
+                        </td>
+                    </tr>
+                </aura:iteration>
+            </tbody>
+        </table>
+    </aura:if>
+    </div>
+</aura:component>

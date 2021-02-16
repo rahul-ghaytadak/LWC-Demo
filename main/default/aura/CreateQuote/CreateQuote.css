@@ -1,0 +1,74 @@
+.THIS .datatable td:nth-child(1){ display:none !important; } .THIS .datatable th:nth-child(1){ display:none !important; }
+.THIS .selected{
+    color:orange;
+}
+.THIS .slds-select_container::before { }
+.THIS .slds-select_container::after {margin-bottom: 15px; }
+.THIS .slds-select_container .slds-select {margin-bottom: 15px;}
+
+
+.THIS .slds-m-right--small1{
+     width:232px !important;
+}
+
+.THIS .slds-m-around_small{
+    font-size: 10.47px !important;
+    margin: var(--lwc-spacingSmall,0.75rem);
+            
+}
+
+.THIS .slds-m-around--small {
+    font-size: 11px;
+    margin: var(--lwc-spacingSmall,0.75rem);
+}
+
+
+
+.THIS .slds-m-left_small {
+    margin-left: var(--lwc-spacingSmall,0.75rem);
+    font-size: 11px;
+}
+
+                        
+.THIS .slds-m-left--small {
+    margin-left: var(--lwc-spacingSmall,0.75rem);
+    font-size: 12px;
+}
+
+
+.THIS .slds-select {
+    -moz-appearance: none;
+    font-size: 11px;
+	}
+                                
+.THIS .slds-m-around_small {
+    font-size: 11px;
+    margin: var(--lwc-spacingSmall,0.75rem);
+    margin-left: -1px;
+    margin-right: 7px;                                        
+}
+                                        
+.THIS .slds-datepicker__month tr>td:first-child {
+    padding-left:0px !important;
+        
+}
+
+.THIS .slds-datepicker__month tr>th {
+    padding-left:0px !important;
+        padding-left: 0px !important;
+}
+.THIS .slds-datepicker__month tr>td:last-child {
+    padding-right: 0px !important;
+    padding-left: 0px !important;
+}
+.THIS .slds-datepicker__month tr>th:last-child {
+    padding-right: 0px !important;
+    padding-left: 0px !important;
+}
+.THIS .slds-datepicker__month .slds-day{
+    margin:0px !important;
+}
+ .THIS .slds-grid_align-end { justify-content: center !important; }
+.THIS.slds-modal:focus {
+    outline: none !important;
+}

@@ -1,0 +1,4 @@
+<design:component>
+	<design:attribute name="recordId" label="Opportunity d" />
+	<design:attribute name="SelectedUAOs" label="Selected UAOs" />
+</design:component>

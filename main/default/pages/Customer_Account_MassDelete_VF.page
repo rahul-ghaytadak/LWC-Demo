@@ -1,0 +1,53 @@
+<apex:page extensions="Customer_Account_MassDelete" standardController="Account" recordSetVar="sobjects" lightningStylesheets="true" standardStylesheets="false" sidebar="false" applyBodyTag="false" docType="html-5.0 ">
+    <apex:includeLightning />
+    <apex:slds />
+    <div class="slds-scope">
+        <div class="slds-brand-band slds-brand-band_cover slds-brand-band_medium">
+            <div  id="litin"></div>
+        </div>    
+    </div>
+    <script>
+        document.body.style.backgroundColor ="#b0c4df";
+       
+    </script>
+    <html >
+        <head>
+            <apex:stylesheet value="{!URLFOR($Resource.MassDelete, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+        </head>
+        
+        <body>
+            <div class="mass-delete">
+                
+                <div>
+                    <div aria-hidden="false" aria-labelledby="prompt-heading-id" aria-describedby="prompt-message-wrapper" role="alertdialog" class="slds-modal slds-modal--prompt slds-fade-in-open">
+                        <div class="slds-modal__container slds-modal--prompt" role="document" id="prompt-message-wrapper" tabindex="0">
+                            <div class="slds-modal__header slds-theme--warning slds-theme--alert-texture">
+                                <h2 class="slds-text-heading--medium" id="prompt-heading-id">Confirm Delete</h2>
+                            </div>
+                            <div class="slds-modal__content slds-p-around--medium">
+                                <div>
+                                    <center>
+                                    <p>{!ConfirmDelete_Msg}</p>
+                                    </center>
+                                </div>
+                            </div>
+                            <div class="slds-modal__footer slds-theme--default">
+                                <apex:form rendered="{!disableButton}" >
+                                    <apex:commandLink action="{!cancel}" value="" id="cancel">
+                                        <button class="slds-button slds-button--neutral">Cancel</button></apex:commandLink>
+                                    <apex:commandLink action="{!deleteRecords}" value="" id="delete">
+                                        <button class="slds-button slds-button--neutral">Delete Customer Account Records</button></apex:commandLink>
+                                </apex:form>
+                                <apex:form rendered="{!ShowGoBack}" >
+                                    <apex:commandLink style="text-decoration: none !important;margin-left:20px" action="{!cancel}" value="" id="cancel">
+                                        <button class="slds-button slds-button--neutral">Go Back</button></apex:commandLink>
+                                </apex:form> 
+                            </div>
+                        </div>
+                    </div>
+                    <!--div class="slds-backdrop slds-backdrop--open"></div-->
+                </div>
+            </div>
+        </body>
+    </html>
+</apex:page>

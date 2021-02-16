@@ -1,0 +1,15 @@
+.THIS .slds-form-element__label {  font-weight: bold;}
+.THIS table.slds-table_bordered {
+    border-top:none;
+}
+.THIS slds-card__header slds-grid{
+    display:none;
+}
+.THIS .myCheckbox{
+  display: inline-block;
+  float: left;
+}
+
+.THIS .ValidationCSS{
+  margin-bottom:10px;
+}

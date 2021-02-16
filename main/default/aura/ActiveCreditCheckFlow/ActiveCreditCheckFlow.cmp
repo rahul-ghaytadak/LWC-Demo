@@ -1,0 +1,71 @@
+<aura:component controller="ActiveCCFlowController" implements="flexipage:availableForRecordHome,lightning:availableForFlowScreens,force:hasSObjectName,force:hasRecordId" access="global">
+    
+    <lightning:spinner aura:id="Spinner" alternativeText="Loading" size="medium" variant="brand" class="slds-hide spinner" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="CCRecID" type="String" access="global" />
+    <aura:attribute name="utilityPremiums" type="List" access="global" />
+    <aura:attribute name="ccRecord" type="Object"/>
+    <aura:attribute name="recordLoadError" type="String"/>
+    <aura:attribute name="checker" type="boolean" default = "false"/>
+    <aura:attribute name="opp" type="Object"/>
+    <aura:attribute name="sObjectName" type="String"/>
+    <aura:attribute name="recordId" type="String"/>
+
+    <force:recordData aura:id="recordLoader"
+                      recordId="{!v.CCRecID}"
+                      fields="Credit_Check_Outcome__c, Credit_Premium_Applied__c"
+                      targetFields="{!v.ccRecord}"
+                      targetError="{!v.recordLoadError}"
+                      />
+    
+    <lightning:card class="" title="Active Credit Check" iconName="custom:custom17">
+        <aura:if isTrue="{!not(empty(v.CCRecID))}">
+            
+            <lightning:recordViewForm class="slds-p-around_x-small" recordId="{!v.CCRecID}" objectApiName="Credit_Check__c">
+                <div class="slds-grid">
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning:outputField fieldName="Credit_Check_Outcome__c" />
+                    </div>
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning:outputField fieldName="Credit_Rank_Formula__c" />
+                    </div>
+                </div>
+                <div class="slds-grid">
+                    <div class="slds-col slds-size_2-of-2">
+                        <lightning:outputField fieldName="Credit_Insurer_Details__c" />
+                    </div>
+                </div>
+                <div class="slds-grid">
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning:outputField fieldName="Total_Risk_Amount__c" />
+                    </div>
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning:outputField fieldName="Total_Risk_Volume__c" />
+                    </div>
+                </div>
+            </lightning:recordViewForm>
+            <br/>
+            <aura:if isTrue="{!and(not(equals(v.ccRecord.Credit_Check_Outcome__c, 'Failed'), not(equals(v.sObjectName, 'Opportunity'))), v.ccRecord.Credit_Premium_Applied__c == true)}">
+                <div class="slds-grid">
+                    <div class="slds-col slds-size_2-of-2">
+                        <b>Credit Premium:</b> 
+                        <br/>
+                        <table class="slds-table_bordered">
+                            <aura:iteration items="{!v.utilityPremiums}" var="up" indexVar="key">
+                                <tr>
+                                    <td >{!up.key}</td>
+                                    <td><lightning:formattedNumber style="currency" maximumFractionDigits = "5" minimumFractionDigits = "5" value = "{!up.value}" /></td>
+                                </tr>
+                            </aura:iteration>
+                        </table>
+                    </div>
+                </div>
+            </aura:if>
+            <aura:set attribute="else">
+                <div style="text-align:left" class="slds-p-around_x-small slds-theme--shade slds-theme--alert-texture" role="alert">
+                    <lightning:icon iconName="utility:info" alternativeText="Warning!" size="x-small" title="Warning" />&nbsp;No active Credit Check is present for this opportunity
+                </div>
+            </aura:set>
+        </aura:if>
+    </lightning:card>
+</aura:component>

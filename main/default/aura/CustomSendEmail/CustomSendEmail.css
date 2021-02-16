@@ -1,0 +1,16 @@
+.THIS .slds-file-selector__dropzone .slds-file-selector__button .slds-button__icon{ /*For the icon*/
+    display: none;
+}
+/*To override the text, you'll need to set the size of the current text to 0 and to add some content to the before selector of the button*/
+.THIS .slds-file-selector__dropzone .slds-file-selector__button{
+    font-size: 0;
+}
+.THIS .slds-file-selector__dropzone .slds-file-selector__button:before{
+    content: 'Attach File';
+    font-size: 0.75rem; /*Default token for font size 0.75rem*/
+    color:#0070d2; /*Default token for brand color #0070d2*/
+}
+
+.THIS .label-hidden > lightning-input > span {
+    display: none;
+}

@@ -1,0 +1,20 @@
+.THIS .slds-table thead th {
+     background-color : #ffffff !important;
+}
+.THIS .addScroll{
+    overflow-y: scroll !important;
+    max-height: 270px !important;
+}
+.THIS .changeColor svg{
+    fill:#a3a3a3;
+   /* margin-bottom:3px;*/
+    cursor:pointer;
+}
+.THIS .fillColorWarning svg{
+    fill : red;
+    margin-bottom:3px;
+    cursor:pointer;
+}
+.THIS.slds-modal:focus {
+    outline: none !important;
+}

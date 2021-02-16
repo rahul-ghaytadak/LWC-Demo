@@ -1,0 +1,14 @@
+.THIS .showRecordsSelect{
+    margin-bottom:18px;
+}
+
+.THIS .slds-align_absolute-center{
+    
+    width: 1263px;
+    height: 24px;
+}
+
+.THIS .abc:hover svg{
+    fill:#1798c1;
+    cursor:pointer;
+}

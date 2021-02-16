@@ -1,0 +1,134 @@
+<aura:component controller="Create_Quote_Controller" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="recordId" type="string"/>
+    <aura:attribute name="recordResponse" type="object"/>
+    
+    <div class="slds-page-header slds-page-header_record-home" style="padding: 0 !important;">
+        <div class="slds-page-header__row slds-p-around_small" style="border-bottom: 1px solid #dddbda;">
+            <div class="slds-page-header__col-title">
+                <div class="slds-media">
+                    <div class="slds-media__figure">
+                        <lightning:icon iconName="custom:custom18" size="small"/>
+                    </div>
+                    <div class="slds-media__body" style="font-size:14px; padding-top: 3px">
+                        <div class="slds-page-header__name">
+                            <div class="slds-page-header__name-title">
+                                <b>Deal Summary</b>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slds-page-header__row slds-page-header__row_gutters">
+            <div class="slds-page-header__col-details ">
+                <lightning:layout class="slds-grid listDisplays">
+                    <lightning:layoutItem padding="" size="12">
+                        <table class="slds-text-color_weak slds-table slds-table_cell-buffer">
+                            <tr>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="Customer"> Customer:</div>
+                                </td>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" >{!v.recordResponse.CustomerName}</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="Utility">Utility:</div>
+                                </td>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="">
+                                        {!v.recordResponse.objUA}
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="Product">Product:</div>
+                                </td>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="">{!v.recordResponse.Product}</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="Customer Number">Customer Number:</div>
+                                </td>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" >{!v.recordResponse.CustomerNumber}</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="Start Date">Start Date:</div>
+                                </td>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="">
+                                        {!v.recordResponse.StartDate}
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="Term Months">Term (Months):</div>
+                                </td>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="">{!v.recordResponse.TermMonths}</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="Term Volume">Term Volume (kWh):</div>
+                                </td>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" >
+                                        <lightning:formattedNumber value="{!v.recordResponse.TermVolume}"/>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="Contracted Price">Contracted Price:</div>
+                                </td>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="">
+                                        <lightning:formattedNumber value="{!v.recordResponse.ContractedPrice}" style="currency" minimumFractionDigits="5"/>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="SEUS margin">SEUS margin:</div>
+                                </td>
+                                <td scope="col">
+                                    <div class="slds-truncate" >
+                                        <lightning:formattedNumber value="{!v.recordResponse.SEUSmargin}" style="currency" minimumFractionDigits="5"/></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="Broker Margin">Broker Margin:</div>
+                                </td>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="">
+                                        <lightning:formattedNumber value="{!v.recordResponse.BrokerMargin}" style="currency" minimumFractionDigits="5"/> 
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="Commission">Commission:</div>
+                                </td>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="">{!v.recordResponse.Commission}</div>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                    </lightning:layoutItem>
+                </lightning:layout>
+            </div>
+        </div>
+    </div>
+</aura:component>

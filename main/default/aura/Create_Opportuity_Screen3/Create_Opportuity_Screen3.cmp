@@ -1,0 +1,252 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader"
+                access="global" 
+                controller="Create_Opportunity">
+    
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler name="oSelectedRecordEvent" event="c:selectedsObjectRecordEvent" action="{!c.handleComponentEvent}"/>
+    <aura:attribute name="PaginationList" type="list" />
+    <aura:attribute name="chkboxvalue" type="boolean" default = "false"/> 
+    <aura:attribute name="showInvoiceBillingType" type="boolean" default = "false"/> 
+    <aura:attribute name="collapse" type="boolean" default = "false"/> 
+    <aura:attribute name="disabletoggle" type="boolean" default = "true"/> 
+    <aura:attribute name="selectedUserId" type="User" />
+    <aura:attribute name="selectedContacts" type="list" />
+    <aura:attribute name="selectedSaleType" type="String" />
+    <aura:attribute name="recordId" type="String" />
+    <aura:attribute name="Errmsg" type="String" default ="Please contact system administrator." />
+    <aura:attribute name="selectedBillType" type="String" />
+    <aura:attribute name="selectedProductFamily" type="String"  />
+    <aura:attribute name="selectedProduct" type="String" default='Fully Fixed'/>
+    <aura:attribute name="BrokerMargin" type="currency" />
+    <aura:attribute name="CreatePricingRequest" type="boolean" default = "true"/>
+    <aura:attribute name="spinner" type="boolean" default = "false"/>
+    <aura:attribute name="indexVal" type="Integer"/>
+    <aura:attribute name="duplicateAvailable" type="boolean" default = "false"/>
+    <aura:attribute name="SaleType" type="list" default="['New']" />
+    <aura:attribute name="BillType" type="list"/>
+    <aura:attribute name="InvoiceBillingType" type="list" default="['Summary Billing','Single Account Billing']"/>
+    <aura:attribute name="ProductFamily" type="list" default='--None--'/>
+    <aura:attribute name="Product" type="list" />
+    <aura:attribute name="PRequest" type="Create_Opportunity.PRWrapper" />
+    <aura:attribute name="DefaultProduct" type="list" />
+    <aura:attribute name="DefaultProductLookup" type="String" />
+    <aura:attribute name="OppId" type="String" />
+    <aura:attribute name="State" type="String" default="{ Product: 'label1', BillType: 0,BrokerMargin : 0,UrgentRequest : 'UrgentRequest',Notes : 'Notes',DueDate : 11/11/2000 }" />
+    <aura:registerEvent name="cmpEvent" type="c:ComponentEvent"/>
+    <aura:attribute name="StorePRList" type="Pricing_Request__c[]"/>
+    <aura:attribute name="selectedBillTypeNew" type="String" default ="Dual"/>
+    <aura:attribute name="selectedBillTypePORAndDual" type="String" default ="POR &amp; Dual"/>
+    <aura:html tag="style">
+        .cuf-content {
+        padding: 0 0rem !important;
+        }
+        .slds-modal__container{
+        max-width: 80rem !important;
+        width:80% !important;
+        }
+        .slds-p-around--medium {
+        padding: 0rem !important;
+        }       
+        .slds-modal__content{
+        overflow-y: hidden !important;     
+        height:unset !important;
+        max-height:unset !important;
+        }
+    </aura:html>
+    
+    <!--aura:handler name="init" value="{!this}" action="{!c.doInit}"/-->
+    <article class="slds-card" style="margin-top:30px;">
+        <div class="slds-page-header" role="banner" style="margin-top: -30px;padding-top: 10px;padding-bottom: 10px;margin-bottom: 10px;">
+            <div class="slds-grid">
+                <div class="slds-col slds-has-flexi-truncate">
+                    <div class="slds-media slds-no-space slds-grow">
+                        <div class="slds-media__figure">
+                            <lightning:icon iconName="standard:opportunity" size="small"/>
+                        </div>
+                        <div class="slds-media__body" style=" font-size:14px; padding-top: 3px">
+                            <b>Create New Opportunity</b>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        <div class="slds-p-around--large" style="padding-bottom: 0px;padding-top: 3px;">   
+            <div class="slds-float_right slds-p-top_small slds-p-right_x-large">
+                <h1 class="slds-page-header__title" style="padding-right: 20px;">
+                    <b>  <lightning:buttonIcon iconName="utility:add"  size="medium" variant="bare" alternativeText="Add" onclick="{!c.addRow}"/></b>
+                </h1>
+            </div>
+            <div class="slds-page-header" style="cursor: pointer;" onclick="{!c.panelOne}">
+                <section class="slds-clearfix">
+                    <div class="slds-float--left ">
+                        <lightning:icon class="slds-show" value="a" aura:id="panelOne" iconName="utility:chevrondown" size="x-small" alternativeText="Indicates add"/>
+                        <lightning:icon class="slds-hide" value="b" aura:id="panelOne" iconName="utility:chevronright" size="x-small" alternativeText="Indicates dash"/>
+                    </div>
+                    <div class="slds-m-left--large" style="width:1040px;">Pricing Request Details&nbsp;({!v.indexVal}) <aura:if isTrue ="{!v.duplicateAvailable}">
+      <span style="color:#8B0000;">&nbsp;&nbsp;<b>Duplicate pricing request records detected..!</b></span>  
+    </aura:if></div>
+                </section>
+            </div>
+            
+            <div class="slds-show slds-p-around--medium" aura:id="panelOne">
+                <!--<div class="slds-grid slds-gutters" style="margin-bottom:-80px;">-->
+                
+                <span>
+                    <!-- lightning:button to get selected rows data -->
+                    <aura:if isTrue="{!v.spinner}">
+                        <div aura:id="spinnerId" class="slds-spinner_container">
+                            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                                <span class="slds-assistive-text">Loading...</span>
+                                <div class="slds-spinner__dot-a"></div>
+                                <div class="slds-spinner__dot-b"></div>
+                            </div>
+                        </div>
+                    </aura:if>
+                    
+                </span>
+                
+                
+                <aura:if isTrue ="{!v.CreatePricingRequest}">
+                    <div>
+                        
+                        <div class="container-fluid" style="max-height: 280px; overflow-y: scroll; border: solid 2px #f3f2f2;">        
+                            <table class="slds-table slds-table_bordered slds-table_cell-buffer"> 
+                                <thead>
+                                    <tr class="slds-text-title_caps">
+                                        <th scope="col">
+                                            <div class="slds-truncate">#</div>
+                                        </th>
+                                        
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Product Family">Product Family</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Product">Product</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Bill Type">Bill Type</div> 
+                                        </th>
+                                        <!--
+                                            <th scope="col">
+                                                <div class="slds-truncate" title="Invoice Billing Type">Invoice Billing Type</div> 
+                                            </th>
+                                        -->
+                                    </tr>
+                                </thead>   
+                                <tbody>      
+                                    <aura:iteration items="{!v.StorePRList}" var="StorePRListVar" indexVar="index">
+                                       
+                                        <tr class="{!if(StorePRListVar.duplicate=='yes', 'slds-form-element slds-has-error', '')}">
+                                            <td style="{!if(StorePRListVar.duplicate=='yes', 'color:#8B0000', 'width: 5%')}"> 
+                                                {!index + 1}
+                                            </td>
+                                            
+                                            <td style="width: 18%;" >
+                                                <lightning:select name="{!index}" required="true" class="slds-m-right--small" label="Product Family" aura:id="ProductFamily" onchange="{!c.onProductFamilyChange}">
+                                                    <aura:iteration items="{!v.ProductFamily}" var="val" indexVar="key">
+                                                        <option text="{!val.value}" value="{!val.key}"> {!val}</option>
+                                                    </aura:iteration>
+                                                </lightning:select>                            
+                                            </td>
+                                            
+                                            
+                                            <td style="width: 45%;" >
+                                                <lightning:select name="{!index}" required="true" class="slds-m-right--small" label="Product" aura:id="selectProduct" value="{!StorePRListVar.Product_Lookup__c}" onchange="{!c.showInvoiceBillingType}">
+                                                    <aura:iteration items="{!StorePRListVar.picklistValues}" var="val" indexVar="key">
+                                                        <option text="{!val.value}" value="{!val.key}"/>
+                                                    </aura:iteration>
+                                                </lightning:select>
+                                            </td>
+                                            <td style="width: 133px;">
+                                                <lightning:select name="{!index}" required="true" class="slds-m-right--small" label="Bill Type" aura:id="selectBillType" onchange="{!c.showInvoiceBillingType}" value="{!StorePRListVar.Bill_Type__c}">
+                                                    <aura:iteration items="{!v.BillType}" var="val" indexVar="key">
+                                                        <option text="{!val.value}" selected="{!val.key==v.StorePRListVar.Bill_Type__c}" value="{!val.key}"> {!val}</option>
+                                                    </aura:iteration>
+                                                       <!-- <option text="POR &amp; Dual" value="POR &amp; Dual"></option>-->
+                                                </lightning:select>
+                                            </td>  
+                                            <td style="width: 15%;">
+                                            <aura:if isTrue="{!StorePRListVar.Bill_Type__c == v.selectedBillTypeNew || StorePRListVar.Bill_Type__c == v.selectedBillTypePORAndDual }">
+                                                
+                                                    
+                                                    <lightning:select required="true" class="" label="Invoice Billing Type" aura:id="selectInvoiceBillingType" value="{!StorePRListVar.Invoice_Billing_Type__c}" onchange="{!c.showInvoiceBillingType}">
+                                                        <aura:iteration items="{!v.InvoiceBillingType}" var="val" indexVar="key">
+                                                            <option text="{!val.value}" selected="{!val.key==v.StorePRListVar.Invoice_Billing_Type__c}" value="{!val.key}"> {!val}</option>
+                                                        </aura:iteration>
+                                                    </lightning:select>
+                                                    
+                                                
+                                            </aura:if>
+                                            </td>
+                                            <td style="padding-top: 18px;padding-left: 30px;">
+                                                
+                                                <a onclick="{!c.removeRow}" data-record="{!index}">
+                                                    <lightning:icon iconName="utility:delete" size="x-small" alternativeText="Delete" class="abc"/>
+                                                    <span class="slds-assistive-text">Delete</span>
+                                                </a>
+                                                
+                                            </td> 
+                                        </tr>
+                                    </aura:iteration>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    
+                        <div class="container-fluid">        
+                            <table class="slds-table slds-table_cell-buffer slds-no-row-hover">
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                         <lightning:input style="margin-top:25px;margin-bottom:15px;" aura:id="UrgentRequest" type="checkbox" label="Urgent Request" name="input2"/>     
+
+                                        </td>
+                                        <td>
+                                            <!--div style="height:50px !important;">
+                                                CPM User
+                                                <c:customLookup objectAPIName="User" contactRole="" ShowMsg="false" selectedRecord="{Id:'aaa'}" showButton="false" NoContactRoleerror="No User Selected" placeholder="search users"/>
+                                            </div-->
+                                        </td>
+                                        
+                                            <td>
+                                                <!--lightning:input required="true" type="date" name="input1" label="Start Date" aura:id="startDate" /-->    
+                                                <lightning:input autocomplete="true" class="{!if(v.disabletoggle,'slds-form-element slds-has-error','')}" style="margin-top:7px;" required="true" type="date" name="input2" label="Due Date" aura:id="dueDate" onchange="{! c.changeDueDate }"/>        
+                                            </td>
+                                            <td>
+                                                <lightning:textarea style="margin-top:7px;" aura:id="Notes" label="Notes" />    
+                                                
+                                            </td>
+                                        
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    
+                    
+                </aura:if>
+                
+                
+                <!-- </div>-->
+            </div>    
+        </div>
+        <div style="background-color:white;height: 233px;" class="slds-card__body slds-card__body_inner">
+            
+            
+        </div>
+    </article>
+    
+    
+        <footer class="slds-card__footer" style="padding-bottom: 57px !important;background-color:#F8F8F8;padding-top: 0px;margin-top: -56px;height:112px;">
+            <span style="display:inline-block; margin-top:68px;float:right">
+                <lightning:button label="Next"
+                                  disabled ="{!v.disabletoggle || v.duplicateAvailable==true}"
+                                  variant="brand"
+                                  onclick="{!c.CreatePricingRequest }"
+                                  name="next"/>
+            </span>
+        </footer>
+   
+</aura:component>

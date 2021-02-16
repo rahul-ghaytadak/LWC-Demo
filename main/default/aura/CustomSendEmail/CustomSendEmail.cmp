@@ -1,0 +1,114 @@
+<aura:component controller="PrepareForContractController" implements="flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global" >
+    <!--Part 1 [for attribute declare]-->  
+    <aura:attribute name="email" type="string"/>
+    <aura:attribute name="toAddressesList" type="string[]"/>
+    <aura:attribute name="ccAddressesList" type="string[]"/>
+    <aura:attribute name="recordId" type="string"/>
+    <aura:attribute name="subject" type="string"/>
+    <aura:attribute name="body" type="string"/>
+    <aura:attribute name="mailStatus" type="boolean" default="false"/>
+    <aura:attribute name="emailTemplateName" type="string"/>
+    <aura:attribute name="selectedToRecords" type="Object[]"/>
+    <aura:attribute name="selectedCcRecords" type="Object[]"/>
+    <aura:attribute name="contact" type="object"/>
+    <aura:attribute name="CountofTerms" type="integer" default="1"/>
+    <aura:attribute name="userInfo" type="object"/>
+    <aura:attribute name="attachment" type="object[]"/>
+    <aura:attribute name="errorMessage" type="string"/>
+    <aura:attribute name="term" type="integer[]"/>
+    <aura:attribute name="accountName" type="string"/>
+    <aura:attribute name="customerContact" type="object"/>
+    <aura:attribute name="multiple" type="Boolean" default="true"/>
+    <aura:attribute name="disabled" type="Boolean" default="false"/>  
+    <aura:attribute name="additionalFiles" type="Object[]" default=""/>  
+    <aura:attribute name="accept" type="List" default="['.jpg', '.jpeg', '.doc', '.pdf', '.svg', '.docx', '.csv', '.xls', '.png']"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"   />
+    <aura:method name="sendEmail" action="{!c.sendMail}"/>
+    <!---Part 2 [header part] -->  
+    <div class="modal-header slds-modal__header slds-size_1-of-1">
+        <h4 class="title slds-text-heading--medium">Send Email</h4>
+    </div>
+    <aura:registerEvent name="oSelectedRecordEvent" type="c:selectedsObjectRecordEvent"/>
+    
+    <!---Part 4 [mail fourm part]-->   
+    <div class="slds-modal__content slds-p-around_medium slds-size_1-of-1 slds-is-relative">
+        <div class="slds-form--stacked">
+            <div class="slds-form" role="list">
+                <div class="slds-form__row">
+                    <div class="slds-form__item" role="listitem">
+                        <div class="slds-form-element slds-form-element_horizontal slds-is-editing slds-form-element_1-col">
+                            <label class="slds-form-element__label" for="single-form-element-id-04">From</label>
+                            <div class="slds-form-element__control" style="padding:0;padding-left:5%">
+                                <div class="slds-box" style="padding: 5px;">{!v.userInfo.Name} &lt;{!v.userInfo.Email}&gt;</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <c:multiSelectPicklist aura:id="toMulti"
+                                   objectAPIName="contact"
+                                   IconName="standard:contact"
+                                   lstSelectedRecords="{!v.selectedToRecords}"
+                                   AddressesList="{!v.toAddressesList}"
+                                   label="To"/>
+            <c:multiSelectPicklist objectAPIName="contact"
+                                   IconName="standard:contact"
+                                   lstSelectedRecords="{!v.selectedCcRecords}"
+                                   label="Cc"/>
+            <div class="slds-form" role="list">
+                <div class="slds-form__row">
+                    <div class="slds-form__item" role="listitem">
+                        <div class="slds-form-element slds-form-element_horizontal slds-is-editing slds-form-element_1-col">
+                            <label class="slds-form-element__label" for="single-form-element-id-04">Subject</label>
+                            <div class="slds-form-element__control" style="padding:0;padding-left:5%">
+                                <ui:inputText class="slds-input" aura:id="subject"  value="{!v.subject}" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="slds-form-element">
+                <div class="slds-form-element__control">
+                    <lightning:inputRichText aura:id="body" value="{!v.body}" />
+                </div>
+            </div>
+            <br/>
+            <div class="slds-form-element">
+                <div class="slds-form-element__control">
+                    <aura:if isTrue="{!not(empty(v.attachment))}">
+                        <aura:iteration items="{!v.attachment}" var="att">
+                        <lightning:pill class="slds-m-around_xx-small slds-m-right_small" href="" onclick="{!c.openSingleFile}" label="{!att.ContentDocument.Title}" onremove="{! c.clearAttachment }" name="{!att.ContentDocumentId}" >
+                            <aura:set attribute="media">
+                                <lightning:icon iconName="utility:attach" size="small" alternativeText="icon"/>
+                            </aura:set>
+                        </lightning:pill>
+                        </aura:iteration>
+                    </aura:if>
+                    <aura:iteration items="{!v.additionalFiles}" var="add">
+                        <lightning:pill class="slds-m-around_xx-small slds-m-right_small" href="" label="{!add.name}" onclick="{!c.openSingleFile}" name="{!add.documentId}" onremove="{! c.clearFile }">
+                            <aura:set attribute="media">
+                                <lightning:icon iconName="utility:attach" size="small" alternativeText="icon"/>
+                            </aura:set>
+                        </lightning:pill>
+                    </aura:iteration>
+                    <br/>
+                </div>
+                <lightning:fileUpload 
+                                      name="fileUploader"
+                                      label= "Attach Files"
+                                      accept="{!v.accept}"
+                                      multiple="{!v.multiple}"
+                                      recordId="{!v.recordId}"
+                                      onuploadfinished="{! c.handleUploadFinished }">
+                </lightning:fileUpload>
+                
+            </div>
+            <aura:if isTrue="{!not(empty(v.errorMessage))}">
+                <ui:message title="Error" severity="error" closable="true">
+                    {!v.errorMessage}
+                </ui:message>
+            </aura:if>
+        </div>
+    </div>
+</aura:component>

@@ -1,0 +1,44 @@
+<aura:component controller="EOS_DataWindowController" implements="flexipage:availableForRecordHome,force:hasSObjectName,force:hasRecordId" access="global" >
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <aura:attribute name="recordId" type="string"/> 
+    <aura:attribute name="spinner" type="boolean" default="true"/>
+    <aura:attribute name="billingAccounts" type="list"/> 
+    <aura:attribute name="ledgerSummary" type="Object"/> 
+    <aura:attribute name="invoiceUAs" type="list"/>
+    
+    <aura:attribute name="errorMessage" type="String" />
+    
+    <aura:attribute name="UARecord" type="Object"/>
+    <aura:attribute name="UtilityAccount" type="Object"/>
+    <aura:attribute name="recordLoadError" type="String"/>
+    <aura:attribute name="showApiData" type="boolean" default="false"/>
+    
+    <aura:if isTrue="{!equals(v.sObjectName, 'Utility_Account__c')}">
+        <force:recordData aura:id="recordLoader"
+                          recordId="{!v.recordId}"
+                          targetFields="{!v.UtilityAccount}"
+                          fields="EOS_BillingAccountNumber__c"
+                          recordUpdated="{!c.doInitUA}"  
+                          />
+    </aura:if>
+    <aura:if isTrue="{!equals(v.sObjectName, 'Account')}">
+        
+        <lightning:accordion aura:id="accordion" onsectiontoggle="{! c.handleSectionToggle }"  allowMultipleSectionsOpen="true">
+            <aura:iteration items="{!v.billingAccounts}" var="item">
+                <lightning:accordionSection name="{!item.billingAccountNumber}" label="{!item.billingAccountNumber}" >
+                    <aura:set attribute="body">
+                        <aura:if isTrue="{!item.isChecked}">
+                            <c:EOS_DataTable billingAccountNumber="{!item.billingAccountNumber}"/>
+                        </aura:if>
+                    </aura:set>
+                </lightning:accordionSection>
+            </aura:iteration>
+        </lightning:accordion>
+        
+    </aura:if>
+    <aura:if isTrue="{!and(equals(v.sObjectName, 'Utility_Account__c'), v.spinner == false)}">
+        <c:EOS_DataTable ledgerSummary="{!v.ledgerSummary}" invoiceUAs="{!v.invoiceUAs}" BANUA="{!v.UtilityAccount.EOS_BillingAccountNumber__c}" errorMessage="{!v.errorMessage}" spinner="{!v.spinner}"/>
+    </aura:if>
+</aura:component>

@@ -1,0 +1,584 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction"
+                access="global" 
+                controller="Create_Quote_Controller">
+    <!-- call doInit method on component load -->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler event="force:refreshView" action="{!c.doInit}" />
+    
+    <!-- aura attributes to store data/values --> 
+    <aura:attribute name="listOfAllAccounts" type="list"/>
+    <aura:attribute name="startDate" type="Date"/>
+    <aura:attribute name="StartDateSet" type="boolean" default = "false"/>
+    <aura:attribute name="PaginationList" type="list"/> 
+    <aura:attribute name="selectedCount" type="integer" default="0"
+                    description="selected Records Count"/>
+    <aura:attribute name="selectedUACount" type="integer" default="0"
+                    description="selected Records Count"/>
+    <aura:attribute name="recordId" type="string"/>
+    <aura:attribute name="EarliestDate" type="Date"/>
+     <aura:attribute name="EarliestDateWarning" type="boolean" default="false"/>
+    <aura:attribute name="startPage" type="Integer" />
+    <aura:attribute name="endPage" type="Integer"/>
+    <aura:attribute name="totalRecordsCount" type="Integer"/>
+    <aura:attribute name="pageSize" type="Integer" default="5"
+                    description="number of records to be display on per page"/>
+    <aura:attribute name="currentPage" type="integer" default="1"/>
+    <aura:attribute name="totalPagesCount" type="integer"/>
+    <aura:attribute name="TwelveMonthAveragePrice" type="decimal"/>
+    <aura:attribute name="AverageLoadFactor" type="decimal"/>
+     <aura:attribute name="mylabel" type="Decimal" />
+    <aura:attribute name="pklst" type="boolean" default="true"/>
+    <aura:attribute name="editmode" type="boolean" default="true"/>
+    <aura:attribute name="bNoRecordsFound" type="boolean"/>
+    <aura:attribute name="sort" type="String" default="ASC"/>
+    <!-- new Pagination -->
+    <aura:attribute name="currentPageNumber" type="Integer" default="1"/>
+    <aura:attribute name="totalPages" type="Integer" default="0"/>
+    <aura:attribute name="pageList" type="List"/>    
+    <aura:attribute name="spinner" type="boolean" default = "false"/> 
+    
+    <aura:attribute name="selectedPriceIdOnLoad" type="String" />
+    <aura:attribute name="selectedPriceId" type="String" />
+    <aura:attribute name="selectedProductName" type="Object" />   
+    <aura:attribute name="priceList" type="List" access="PRIVATE" />
+    <aura:attribute name="selectedValue" type="String" />
+    <aura:attribute name="checkOldPrice" type="boolean" default="false"/>
+    <aura:attribute name="confirmation" type="boolean" default="true"/>
+    <aura:attribute name="isInit" type="boolean" default="true"/>
+    
+    <aura:attribute name="oppRecord" type="Object"/>
+    <aura:attribute name="recordLoadError" type="String"/>
+    
+    <aura:attribute name="newUAs" type="list"/>
+    <aura:attribute name="showUA" type="boolean" default="false"/>
+    <aura:attribute name="utilityAccounts" type="list" />
+    <aura:attribute name="showSpinnerFullScreen" type="Boolean" default="false" />
+    
+    <aura:attribute name="sortAsc" type="boolean" default="false"/>
+    <aura:attribute name="selectedTabsoft" type="string" default="duration" description="Use for show/hide arraow sign on header based on conditions"/>
+    <aura:attribute name="arrowDirection" type="string" default="arrowup" description="Use for change arrow sign direction on header based on click"/>
+	<!--<aura:attribute name="selectedstoreVolumn" type="string"/>-->
+    <aura:attribute name="showCreateUA" type="boolean" default="false"/>
+    
+    <force:recordData aura:id="recordLoader"
+                      recordId="{!v.recordId}"
+                      fields="StageName,AccountId,ContactId"
+                      targetFields="{!v.oppRecord}"
+                      targetError="{!v.recordLoadError}"
+                      />
+    <!--aura:if isTrue="{!v.priceList == null}">
+        <ui:message title="" severity="error" closable="true">
+        <lightning:icon iconName="utility:error" size="small" alternativeText="" title="" />
+            Please add Price Data to generate a Quote!
+        </ui:message>   
+    </aura:if-->
+    <aura:if isTrue="{!v.bNoRecordsFound}">
+        <!--display error message if there is no records available -->
+        <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info" role="alert">
+            <span class="slds-assistive-text">error</span>
+            <h2>No record found.</h2>
+        </div>
+        <aura:set attribute="else">
+            <aura:if isTrue="{!v.showUA == false}">
+                <div class="slds-page-header" role="banner" style="margin-top: -17px;padding-top: 15px;padding-bottom: 15px;">
+                    <div class="slds-grid">
+                        <div class="slds-col slds-has-flexi-truncate">
+                            <div class="slds-media slds-no-space slds-grow">
+                                <div class="slds-media__figure">
+                                    <lightning:icon iconName="custom:custom67" size="small"/>
+                                </div>
+                                <div class="slds-media__body" style=" font-size:14px; padding-top: 3px">
+                                    <b>Utility Accounts ({!v.listOfAllAccounts.length})</b>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-col slds-has-flexi-truncate">
+                            <div class="slds-media slds-no-space slds-grow" style="float: right;margin-right: 3%;">
+                                <lightning:button variant="brand-outline" label="Add Utility Accounts" title="" onclick="{! c.showUA }" />
+                                <lightning:button variant="brand-outline" label="Upload Utility Accounts" title="" onclick="{! c.openmodal }" />
+                                <!--lightning:button variant="brand-outline" label="Edit Start Dates" title="" onclick="{! c.changeStartDates }" /-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-card__body slds-card__body_inner">
+                    <!-- lightning:button to get selected rows data -->
+                    <aura:if isTrue="{!v.spinner}">
+                        <div aura:id="spinnerId" class="slds-spinner_container">
+                            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                                <span class="slds-assistive-text">Loading...</span>
+                                <div class="slds-spinner__dot-a"></div>
+                                <div class="slds-spinner__dot-b"></div>
+                            </div>
+                        </div>
+                    </aura:if>
+                    
+                    <span class="slds-badge slds-badge_lightest slds-m-around_small" >
+                        Selected Accounts : {!v.selectedCount}
+                    </span>
+                    <span class=" slds-badge slds-badge_lightest slds-m-around_small slds-align_absolute-center" style="display:inline-block">
+                        12 Months Average Price :  <lightning:formattedNumber value="{!v.TwelveMonthAveragePrice}" style="currency" currencyCode="USD" maximumFractionDigits="5" minimumFractionDigits="5"/> 
+                    </span>
+                    <span class=" slds-badge slds-badge_lightest slds-m-around_small slds-align_absolute-center" style="display:inline-block;margin-left:0px;margin-right:0px;">
+                        Average Load Factor :  <lightning:formattedNumber value = "{!v.AverageLoadFactor}" maximumFractionDigits="2" style="percent"/>
+                    </span>
+                        
+                    <span style="display:inline-block; float:right; margin-top: -1%;">
+                        <span style="display:inline-block;;padding:5px; ">
+                            <b> <lightning:formattedText class = "slds-m-left--small slds-m-right--small slds-m-right--small1" value="Select Price: " /></b>
+                        </span>
+                       
+                        <span style="display:inline-block">
+                            <lightning:select name="selectPrice" label="" class="slds-m-right--small" aura:id="selectPrice" value="{!v.selectedValue}" onchange="{!c.onPriceChange}">
+                                <aura:if isTrue="{!v.priceList == null}">
+                                    <option text="None Available" value="None Available" />
+                                </aura:if>
+                                <aura:iteration items="{!v.priceList}" var="option">
+                                    <option text="{!option.priceName +' - '+option.createdDate +' - '+option.productName}" value="{!option.priceId}" />
+                                </aura:iteration>
+                            </lightning:select>
+                        </span>
+                       
+                       
+                         
+                    </span>
+                    <!--aura:if isTrue="{! v.selectedProductName.productName }">
+                    <div class="slds-box" style="clear:both;padding-top:3px;padding-bottom:5px;background-color:#F8F8F8">
+                        <b>Product</b>
+                        <div style="margin-top:10px;"></div>
+                            <b>{! v.selectedProductName.productName }</b> - <b>{! v.selectedProductName.productfamily }</b>
+                    </div>
+                    </aura:if-->
+                    <aura:if isTrue="{! v.editmode==false}">
+                        <center>
+                        <div style="margin-top:16px;"></div>
+                       <div style="inline-block;clear:both;">
+                        <lightning:button variant="brand" label="Save" title="Base action" onclick="{! c.UpdateStartDates }"/>
+                     
+                        <lightning:button variant="neutral" label="Cancel" title="Base action" onclick="{! c.cancelEditMode }"/>
+                     </div>
+                            </center>
+                    </aura:if>
+                           <div style="margin-top:16px;"></div>
+                    <!-- data table start-->  
+                    <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                        <thead>
+                            <tr >
+                                <!--header checkbox for select all-->
+                                <th style="width:3.25rem;" class="slds-text-align_right">
+                                    <div class="slds-form-element">
+                                        <div class="slds-form-element__control">
+                                            <label class="slds-checkbox">
+                                                <ui:inputCheckbox disabled="{!v.totalRecordsCount == 0 || v.priceList == null || v.oppRecord.StageName == 'Contracting' || v.oppRecord.StageName == 'Closed Won' || v.oppRecord.StageName == 'Closed Lost'}"
+                                                                  aura:id="selectAllId"
+                                                                  value = "true"
+                                                                  change="{!c.selectAllCheckbox}"/>
+                                                <span class="slds-checkbox_faux"></span>
+                                                <span class="slds-form-element__label"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th style="width:20%;" class="slds-is-sortable " scope="col" onclick="{!c.sortByAUName}">
+                                    <a href="javascript:void(0);" class="slds-text-link--reset">
+                                        <span class="slds-assistive-text">Sort</span>
+                                        <span class="slds-truncate" title="Utility Account Number">Utility Account Number</span>  
+                                        <aura:if isTrue="{! and(v.arrowDirection == 'arrowdown', v.selectedTabsoft == 'AUName') }">&nbsp;  &#9660; </aura:if>  
+                                        <aura:if isTrue="{! and(v.arrowDirection != 'arrowdown', v.selectedTabsoft == 'AUName') }"> &nbsp;  &#9650; </aura:if>                        
+                                    </a>
+                                </th>
+                                <th style="width:20%;" class="slds-is-sortable " scope="col" onclick="{!c.sortByStartDate}">
+                                    <a href="javascript:void(0);" class="slds-text-link--reset">
+                                        <span class="slds-assistive-text">Sort</span>
+                                        <span class="slds-truncate" title="Start Date">Start Date</span>  
+                                        <aura:if isTrue="{! and(v.arrowDirection == 'arrowdown', v.selectedTabsoft == 'StartDate') }">&nbsp;  &#9660; </aura:if>  
+                                        <aura:if isTrue="{! and(v.arrowDirection != 'arrowdown', v.selectedTabsoft == 'StartDate') }"> &nbsp;  &#9650; </aura:if>                        
+                                    </a>
+                                </th>
+                                <!--th scope="col"><span>Utility Account Number <lightning:buttonIcon name="AUName" iconName="utility:sort" variant="bare" onclick="{! c.sortByAUName}" alternativeText="Utility Account Number" /></span></th-->
+                                <th style="width:15%;" class="slds-is-sortable " scope="col" onclick="{!c.sortByLF}">
+                                    <a href="javascript:void(0);" class="slds-text-link--reset">
+                                        <span class="slds-assistive-text">Sort</span>
+                                        <span class="slds-truncate" title="Load Factor">Load Factor</span>  
+                                        <aura:if isTrue="{! and(v.arrowDirection == 'arrowdown', v.selectedTabsoft == 'LoadFactor') }">&nbsp;  &#9660; </aura:if>  
+                                        <aura:if isTrue="{! and(v.arrowDirection != 'arrowdown', v.selectedTabsoft == 'LoadFactor') }"> &nbsp;  &#9650; </aura:if>                        
+                                    </a>
+                                </th>
+                                <th style="width:20%;" class="slds-is-sortable " scope="col" onclick="{!c.sortBy12MBP}">
+                                    <a href="javascript:void(0);" class="slds-text-link--reset">
+                                        <span class="slds-assistive-text">Sort</span>
+                                        <span class="slds-truncate" title="Load Factor">12 Month Base Price</span>  
+                                        <aura:if isTrue="{! and(v.arrowDirection == 'arrowdown', v.selectedTabsoft == '12MBP') }">&nbsp;  &#9660; </aura:if>  
+                                        <aura:if isTrue="{! and(v.arrowDirection != 'arrowdown', v.selectedTabsoft == '12MBP') }"> &nbsp;  &#9650; </aura:if>                        
+                                    </a>
+                                </th>
+                                <th style="width:20%;" class="slds-is-sortable" scope="col" onclick="{!c.sortByAnnualVol}">
+                                    <a href="javascript:void(0);" class="slds-text-link--reset">
+                                        <span class="slds-assistive-text">Sort</span>
+                                        <span class="slds-truncate" title="Annual Volume(kWh)">Annual Volume(kWh)</span>  
+                                        <aura:if isTrue="{! and(v.arrowDirection == 'arrowdown', v.selectedTabsoft == 'Avol') }">&nbsp;  &#9660; </aura:if>  
+                                        <aura:if isTrue="{! and(v.arrowDirection != 'arrowdown', v.selectedTabsoft == 'Avol') }"> &nbsp;  &#9650; </aura:if>                        
+                                    </a>
+                                </th>
+                                <th style="width:20%;" class="slds-is-sortable" scope="col" onclick="{!c.sortByUtility}">
+                                    <a href="javascript:void(0);" class="slds-text-link--reset">
+                                        <span class="slds-assistive-text">Sort</span>
+                                        <span class="slds-truncate slds-text-align_center" title="Utility">Utility</span>  
+                                        <aura:if isTrue="{! and(v.arrowDirection == 'arrowdown', v.selectedTabsoft == 'Utility') }">&nbsp;  &#9660; </aura:if>  
+                                        <aura:if isTrue="{! and(v.arrowDirection != 'arrowdown', v.selectedTabsoft == 'Utility') }"> &nbsp;  &#9650; </aura:if>                        
+                                    </a>
+                                </th>
+                                <th style="width:20%;" scope="col">
+                                    <div class="slds-truncate" title="Status">Status</div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <aura:iteration items="{!v.PaginationList}" var="obj">
+                                <tr>
+                                    <td scope="row" class="slds-text-align_right" style="width:3.25rem;">
+                                        <div class="slds-form-element">
+                                            <div class="slds-form-element__control">
+                                                <label class="slds-checkbox">
+                                                    <ui:inputCheckbox aura:id="checkContact"
+                                                                      text="{!obj.objAccount.Id}"
+                                                                      errors="{!obj}"
+                                                                      value="{!obj.isChecked}"
+                                                                      change="{!c.checkboxSelect}"
+                                                                      disabled="{!obj.objAccount.Status__c == 'Not Priced' || obj.objAccount.Status__c =='' || v.priceList == null || v.oppRecord.StageName == 'Contracting' || v.oppRecord.StageName == 'Closed Won' || v.oppRecord.StageName == 'Closed Lost'}"/>
+                                                    <span class="slds-checkbox_faux"></span>
+                                                    <span class="slds-form-element__label text"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td  style = "" scope="row">
+                                        <div class="slds-truncate" title="{!obj.Utility_Account__r.Name}">
+                                            <a href="{!'/one/one.app?#/sObject/'+ obj.objAccount.Utility_Account__c + '/view'}" target="_blank">  {!obj.objAccount.Utility_Account__r.Name}</a>
+                                            
+                                        </div>
+                                    </td> 
+                                    <td style = "" scope="row">
+                                        <aura:if isTrue="{!v.editmode}">
+                                        <div class="slds-truncate" title="{!obj.Utility_Account__r.Load_Factor__c}">
+                                            <ui:OutputDate value="{!obj.objAccount.Start_Date__c}" format="M/dd/yyyy" />   
+                                        </div>
+                                        <aura:set attribute="else">
+                                        <lightning:input autocomplete="true" type="Date" value="{!obj.objAccount.Start_Date__c}" style="height:53px;margin-top:-12px;width:122px !important;" aura:id="startDatef"/> 
+                                            </aura:set>
+                                            </aura:if>
+                                    </td>
+                                    <td style = "" scope="row">
+                                        <div class="slds-truncate" title="{!obj.Utility_Account__r.Load_Factor__c}">
+                                                {!obj.objAccount.Utility_Account__r.Load_Factor_Display__c}
+                                        </div>
+                                    </td> 
+                                    <td style = "" scope="row">
+                                        <div style="{!if(greaterthanorequal(obj.objAccount.Twelve_Month_Price__c,v.mylabel),'color:red')}" class="slds-truncate" title="{!obj.Twelve_Month_Price__c}">
+                                            <lightning:formattedNumber value="{!obj.objAccount.Twelve_Month_Price__c }" style="currency" currencyCode="USD" currencyDisplayAs="symbol"  minimumFractionDigits="5" maximumFractionDigits="5" />    
+                                        </div>
+                                    </td>
+                                    <td style = "" scope="row">
+                                        <div class="slds-truncate" title="{!obj.Utility_Account__r.Annual_Usage_kWh__c}">
+                                            <lightning:formattedNumber value = "{!obj.objAccount.Utility_Account__r.Annual_Usage_kWh__c}"/>
+                                        </div>
+                                    </td>
+                                    <td style = " " scope="row">
+                                        <div class="slds-truncate" title="{!obj.objAccount.Utility__r.Name}">
+                                            <a href="{!'/one/one.app?#/sObject/'+ obj.objAccount.Utility_Account__r.Utility__c + '/view'}" target="_blank">{!obj.objAccount.Utility_Account__r.Utility__r.Name}</a>
+                                        </div>
+                                    </td>
+                                    <td style = "" scope="row">
+                                        <div class="slds-truncate" title="{!obj.objAccount.Status__c}">
+                                            {!obj.objAccount.Status__c}
+                                        </div>
+                                    </td>
+                                </tr>
+                            </aura:iteration>
+                        </tbody>
+                    </table>
+                    <!-- DataTable End -->
+                    
+                   
+                    
+                    <!--  Pagination Buttons Start -->
+                    <lightning:layoutItem padding="around-small" flexibility="auto" class = "slds-align_absolute-center">
+                        <lightning:button label="First" iconName="utility:left" iconPosition="left"
+                                          onclick="{!c.onFirst}" disabled="{! v.currentPageNumber == 1}"/>
+                        <lightning:button iconName="utility:chevronleft" iconPosition="left"
+                                          onclick="{!c.onPrev}" disabled="{! v.currentPageNumber == 1}"/>
+                        <button value = "1"  onclick="{!c.onFirst}" disabled="{!item=='...'}" class="{!if(v.currentPageNumber==1,'slds-button slds-button_brand','slds-button slds-button_neutral')}"   data-record="1" name="1" onmousedown="{!c.currentPage}"   >
+                            <ui:outputNumber value="1"/>
+                        </button>
+                        <aura:iteration items="{!v.pageList}" var="item">
+                            <button value = "{!item}"  onclick="{!c.processMe}" disabled="{!item=='...'}" class="{!if(v.currentPageNumber==item,'slds-button slds-button_brand','slds-button slds-button_neutral')}"   data-record="{!num}" name="{!num}" onmousedown="{!c.currentPage}"   >
+                                {!item}
+                            </button>
+                        </aura:iteration>
+                        <lightning:button iconName="utility:chevronright" iconPosition="right" 
+                                          disabled="{! v.currentPageNumber == v.totalPages}" onclick="{!c.onNext}"/>
+                        <lightning:button label="Last" iconName="utility:right" iconPosition="right" 
+                                          disabled="{! v.currentPageNumber == v.totalPages}" onclick="{!c.onLast}"/>
+                        <lightning:formattedText class = "slds-m-left--small slds-m-right--small" value="Show Records: " />
+                        <lightning:select  required="false"  value = "{!v.pageSize}" onchange="{! c.changePageSize }">
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="15">15</option>
+                            <option value="20">20</option>
+                            <option value="{!v.totalRecordsCount}">All</option>
+                        </lightning:select>
+                    </lightning:layoutItem> 
+                </div>
+                <aura:if isTrue="{!v.checkOldPrice}">
+                    <div style="text-align:left;padding:3px;" class="slds-box slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_warning" role="alert">
+                        <ul class="slds-list_horizontal">
+                            <li> <lightning:icon iconName="utility:warning" alternativeText="Warning!" size="x-small" title="Warning" /></li> 
+                            &nbsp;
+                            <li style="padding-left:5px;">The selected price is older than 48hrs!</li>
+                        </ul>
+                    </div>
+                </aura:if>
+                <aura:if isTrue="{!v.EarliestDateWarning}">
+                    <div style = "padding-top:5px;"></div>
+                    <div style="text-align:left;padding:5px 3px 5px 3px;" class="slds-box slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_warning" role="alert">
+                        <ul class="slds-list_horizontal">
+                            <li> <lightning:icon iconName="utility:warning" alternativeText="Warning!" size="x-small" title="Warning" /></li> 
+                            &nbsp;
+                            <li style="padding-left:5px;">Please select at least one utility account that has an expected start date of {!v.EarliestDate}</li>
+                        </ul>
+                    </div>
+                </aura:if>
+
+                
+                <footer class="slds-card__footer" style="padding-top: 15px;">
+                    <a class="slds-card__footer-action" href="javascript:void(0);" onclick = "{!c.gotoRelatedList}">View All
+                        <span class="slds-assistive-text">Utility Accounts</span>
+                    </a>
+                </footer>
+                                <!--  Pagination Buttons End -->
+                
+                <aura:set attribute="else">
+                    <aura:if isTrue="{!v.spinner}">
+                        <div aura:id="spinnerId" class="slds-spinner_container">
+                            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                                <span class="slds-assistive-text">Loading...</span>
+                                <div class="slds-spinner__dot-a"></div>
+                                <div class="slds-spinner__dot-b"></div>
+                            </div>
+                        </div>
+                    </aura:if>
+                    <aura:if isTrue="{!not(empty(v.PaginationList))}">
+                        <div class="slds-page-header" role="banner" style="margin-top: -17px;padding-top: 15px;padding-bottom: 15px;">
+                            <div class="slds-grid">
+                                <div class="slds-col slds-has-flexi-truncate">
+                                    <div class="slds-media slds-no-space slds-grow">
+                                        <div class="slds-media__figure">
+                                            <lightning:icon iconName="custom:custom67" size="small"/>
+                                        </div>
+                                        <div class="slds-media__body" style=" font-size:14px; padding-top: 3px">
+                                            <b>Utility Accounts ({!v.utilityAccounts.length})</b>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                        <div class="slds-card__body slds-card__body_inner">
+                            <!-- lightning:button to get selected rows data -->
+                            <span class="slds-badge slds-badge_lightest slds-m-around_small" style="margin-left:4px;">
+                                Selected Accounts : {!v.selectedUACount}
+                            </span>
+                            <span style="display:inline-block;margin-left: 10%;width: 125px;">
+                                <lightning:input autocomplete="true" type="Date" value="{!v.startDate}" id="startDate" name="startDate" onchange="{! c.setAllUAStartDates }" />
+                            </span>
+                            
+                            <!-- data table start-->  
+                            <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                                <thead>
+                                    <tr >
+                                        <!--header checkbox for select all-->
+                                        <th style="width:3.25rem;" class="slds-text-align_right">
+                                            <div class="slds-form-element">
+                                                <div class="slds-form-element__control">
+                                                    <label class="slds-checkbox">
+                                                        <ui:inputCheckbox disabled="{!v.totalRecordsCount == 0 }"
+                                                                          aura:id="selectAllIdUA"
+                                                                          value = "false"
+                                                                          change="{!c.selectAllCheckboxUA}"/>
+                                                        <span class="slds-checkbox_faux"></span>
+                                                        <span class="slds-form-element__label"></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </th>
+                                        <th style="width:25%;" class="slds-is-sortable " scope="col" onclick="{!c.sortUtilityNumber}">
+                                            <a href="javascript:void(0);" class="slds-text-link--reset">
+                                                <span class="slds-assistive-text">Sort</span>
+                                                <span class="slds-truncate" title="Utility Account Number">Utility Account Number</span>  
+                                                <aura:if isTrue="{! and(v.arrowDirection == 'arrowdown', v.selectedTabsoft == 'UN') }">&nbsp;  &#9660; </aura:if>  
+                                                <aura:if isTrue="{! and(v.arrowDirection != 'arrowdown', v.selectedTabsoft == 'UN') }"> &nbsp;  &#9650; </aura:if>                        
+                                            </a>
+                                        </th>
+                                         <th style="width:20%;" scope="col">
+                                            <div class="slds-truncate" style = "" title="StartDates">Start Dates</div>
+                                        </th>
+                                        <!--th scope="col"><span>Utility Account Number <lightning:buttonIcon name="AUName" iconName="utility:sort" variant="bare" onclick="{! c.sortByAUName}" alternativeText="Utility Account Number" /></span></th-->
+                                        <th style="width:20%;" class="slds-is-sortable " scope="col" onclick="{!c.sortByLoadFactorUA}">
+                                            <a href="javascript:void(0);" class=" slds-text-link--reset">
+                                                <span class="slds-assistive-text">Sort</span>
+                                                <span class="slds-truncate" title="Load Factor">Load Factor</span>  
+                                                <aura:if isTrue="{! and(v.arrowDirection == 'arrowdown', v.selectedTabsoft == 'LF') }">&nbsp;  &#9660; </aura:if>  
+                                                <aura:if isTrue="{! and(v.arrowDirection != 'arrowdown', v.selectedTabsoft == 'LF') }"> &nbsp;  &#9650; </aura:if>                        
+                                            </a>
+                                        </th>
+                                        <th style="width:20%;" class="slds-is-sortable" scope="col" onclick="{!c.sortByAnnualVolUA}">
+                                            <a href="javascript:void(0);" class="slds-text-link--reset">
+                                                <span class="slds-assistive-text">Sort</span>
+                                                <span class="slds-truncate" title="Annual Volume(kWh)">Annual Volume(kWh)</span>  
+                                                <aura:if isTrue="{! and(v.arrowDirection == 'arrowdown', v.selectedTabsoft == 'UAvol') }">&nbsp;  &#9660; </aura:if>  
+                                                <aura:if isTrue="{! and(v.arrowDirection != 'arrowdown', v.selectedTabsoft == 'UAvol') }"> &nbsp;  &#9650; </aura:if>                        
+                                            </a>
+                                        </th>
+                                        <th style="width:20%;" class="slds-is-sortable" scope="col" onclick="{!c.sortUtility}">
+                                            <a href="javascript:void(0);" class="slds-text-link--reset">
+                                                <span class="slds-assistive-text">Sort</span>
+                                                <span class="slds-truncate slds-text-align_center" title="Utility">Utility</span>  
+                                                <aura:if isTrue="{! and(v.arrowDirection == 'arrowdown', v.selectedTabsoft == 'UAUtility') }">&nbsp;  &#9660; </aura:if>  
+                                                <aura:if isTrue="{! and(v.arrowDirection != 'arrowdown', v.selectedTabsoft == 'UAUtility') }"> &nbsp;  &#9650; </aura:if>                        
+                                            </a>
+                                        </th>
+                                        <th style="width:20%;" scope="col">
+                                            <div class="slds-truncate" style = "" title="Status">Service Address</div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <aura:iteration items="{!v.PaginationList}" var="obj">
+                                        <tr>
+                                            <td scope="row" class="slds-text-align_right" style="width:3.25rem;">
+                                                <div class="slds-form-element">
+                                                    <div class="slds-form-element__control">
+                                                        <label class="slds-checkbox">
+                                                            <ui:inputCheckbox text="{!obj.objAccount.Id}"
+                                                                              value="{!obj.isChecked}"
+                                                                              change="{!c.checkboxSelectUA}"></ui:inputCheckbox>
+                                                            <span class="slds-checkbox_faux"></span>
+                                                            <span class="slds-form-element__label text"></span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td scope="row">
+                                                <div class="slds-truncate" title="{!obj.objAccount.Name}">
+                                                    <a href="{!'/one/one.app?#/sObject/'+ obj.objAccount.Id + '/view'}" target="_blank">  {!obj.objAccount.Name}</a>
+                                                    
+                                                </div>
+                                            </td> 
+                                            
+                                             <td scope="row">
+                                                <div class="{!if(and(empty(obj.objAccount.Supply_Start_Date__c), obj.isChecked==true), 'slds-truncate slds-form-element slds-has-error', 'slds-truncate')}" title="{!obj.objAccount.Supply_Start_Date__c}" onchange ="{!c.changestartDateSeperately}">
+                                       <lightning:input type="Date" value="{!obj.objAccount.Supply_Start_Date__c}" style="height:53px;margin-top:-12px;width:122px !important;" aura:id=""/> 
+                                                 </div>
+                                            </td>
+                                            
+                                            <td scope="row">
+                                                <div class="slds-truncate" title="{!obj.objAccount.Load_Factor__c}">
+                                                    <lightning:formattedNumber value = "{!obj.objAccount.Load_Factor__c}" maximumFractionDigits="2" style="percent"/>
+                                                </div>
+                                            </td>
+                                            <td style = "" scope="row">
+                                                <div class="slds-truncate" title="{!obj.objAccount.Annual_Usage_kWh__c}">
+                                                    <lightning:formattedNumber value = "{!obj.objAccount.Annual_Usage_kWh__c}"/>
+                                                </div>
+                                            </td>
+                                            <td style = "" scope="row">
+                                                <div class="slds-truncate" title="{!obj.objAccount.Utility__r.Name}">
+                                                    <a href="{!'/one/one.app?#/sObject/'+ obj.objAccount.Utility__c + '/view'}" target="_blank">{!obj.objAccount.Utility__r.Name}</a>
+                                                </div>
+                                            </td>
+                                            <td style = "" scope="row">
+                                                <div class="slds-truncate" title="{!obj.objAccount.Service_Address__c}">
+                                                    {!obj.objAccount.Service_Address__c}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </aura:iteration>
+                                </tbody>
+                            </table>
+                            
+                            <!-- DataTable End -->
+                            <!--  Pagination Buttons Start -->
+                            <lightning:layoutItem flexibility="auto" class = "slds-align_absolute-center">
+                                <lightning:button label="First" iconName="utility:left" iconPosition="left"
+                                                  onclick="{!c.onFirst}" disabled="{! v.currentPageNumber == 1}"/>
+                                <lightning:button iconName="utility:chevronleft" iconPosition="left"
+                                                  onclick="{!c.onPrev}" disabled="{! v.currentPageNumber == 1}"/>
+                                <button value = "1"  onclick="{!c.onFirst}" disabled="{!item=='...'}" class="{!if(v.currentPageNumber==1,'slds-button slds-button_brand','slds-button slds-button_neutral')}"   data-record="1" name="1"    >
+                                    <ui:outputNumber value="1"/>
+                                </button>
+                                <aura:iteration items="{!v.pageList}" var="item">
+                                    <button value = "{!item}"  onclick="{!c.processMe}" disabled="{!item=='...'}" class="{!if(v.currentPageNumber==item,'slds-button slds-button_brand','slds-button slds-button_neutral')}"   data-record="{!num}" name="{!num}"    >
+                                        {!item}
+                                    </button>
+                                </aura:iteration>
+                                <lightning:button iconName="utility:chevronright" iconPosition="right" 
+                                                  disabled="{! v.currentPageNumber == v.totalPages}" onclick="{!c.onNext}"/>
+                                <lightning:button label="Last" iconName="utility:right" iconPosition="right" 
+                                                  disabled="{! v.currentPageNumber == v.totalPages}" onclick="{!c.onLast}"/>
+                                <lightning:formattedText class = "slds-m-left--small slds-m-right--small" value="Show Records: " />
+                                <lightning:select  required="false"  value = "{!v.pageSize}" onchange="{! c.changePageSize }">
+                                    <option value="5">5</option>
+                                    <option value="10">10</option>
+                                    <option value="15">15</option>
+                                    <option value="20">20</option>
+                                    <option value="{!v.totalRecordsCount}">All</option>
+                                </lightning:select>
+
+                            </lightning:layoutItem> 
+                        </div>
+                        <aura:set attribute="else">
+                            <div class="slds-box slds-box slds-theme--shade slds-theme--alert-texture">
+                                <p>No <strong>Utility Accounts</strong> are available to add.</p>
+                            </div>
+                        </aura:set>
+                    </aura:if>
+                    <footer class="slds-card__footer" style="padding-bottom: 3%;">
+                        <span style = "float:left;margin-left: 25px;"> 
+                            <lightning:button label="Cancel"
+                                              class = "slds-button_brand"        
+                                              onclick="{!c.goBack}"
+                                              name="left"/> 
+                        </span>
+                        <span style = "float: right;margin-right: 25px;"> 
+                            <lightning:button label="Add"
+                                              disabled="{!empty(v.PaginationList) || v.StartDateSet==false}"
+                                              class = "slds-button_brand"        
+                                              onclick="{!c.addNewUA}"
+                                              name="next"/>
+                        </span>
+                    </footer>
+                </aura:set>
+            </aura:if>
+        </aura:set> 
+    </aura:if>
+
+    <div role="dialog" tabindex="-1" aria-labelledby="header43" aura:id="Modalbox" class="slds-modal" >
+        <div class="slds-modal__container">
+            <div class="slds-modal__header" style="{!if(v.showSpinnerFullScreen,'opacity:0','')}">
+                <button class="slds-button slds-modal__close slds-button--icon-inverse" title="Close" onclick="{!c.closeModal}">
+                    <lightning:buttonIcon iconName="utility:close" alternativeText="close" variant="bare-inverse" size="large" />
+                    <span class="slds-assistive-text">Close</span>
+                </button>
+                <h2 id="header43" class="slds-text-heading--medium">Utility Account Alignment</h2>
+            </div>
+            <div class="slds-modal__content slds-p-around--medium">
+                <div>
+                                    
+                    <c:UA_OpportunityManagement showSpinnerFullScreen = "{!v.showSpinnerFullScreen}" AccRecId = "{!v.oppRecord.AccountId}" recordId = "{!v.recordId}"/>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="slds-backdrop " aura:id="Modalbackdrop"></div>
+</aura:component>

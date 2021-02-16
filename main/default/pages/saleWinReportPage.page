@@ -1,0 +1,81 @@
+<apex:page standardController="Opportunity" extensions="salesWinReport" lightningStylesheets="true" recordSetVar="abbb"  >
+    <style>
+        
+        .Legend div{
+        margin-left:15px;
+        width:22px;
+        border:1px solid #808080;
+        display:inline-block;
+        }
+        .ie7 .Legend div{
+        display:inline;
+        zoom:1;
+        }
+        .Red {background-color:red;}
+        .Green {background-color:#78C953;}
+        .Blue {background-color:#0B6FCE;}
+    </style>
+    
+    <apex:form >
+        
+        <apex:pageBlock title="Sales Win Rate ({!year})">
+            <div class="Legend">
+                <div class="Blue">&nbsp;</div>
+                Monthly Win %<br/><br/>
+                <div class="Green">&nbsp;</div>
+                3 Month Win %
+                
+            </div>
+            <br/><br/>
+            <apex:chart data="{!data}" height="500" width="100%">
+               
+                <apex:axis type="Numeric" position="left" title="Win %" grid="true"
+                           fields="data1,data2" dashSize="2">
+                    <apex:chartLabel />
+                </apex:axis>
+                <apex:axis type="Category" position="bottom" fields="name">
+                    <apex:chartLabel rotate="315"/>
+                </apex:axis>
+                <apex:barSeries orientation="vertical" axis="left" stacked="false"
+                                xField="name" yField="data1" title="Monthly Win %"/>
+                <apex:lineSeries axis="left"  xField="name" yField="data2" title="3 Month Win %"/>
+            </apex:chart>
+            <apex:pageBlockButtons >
+                <apex:outputPanel rendered="{!IF(year != '2020', true, false)}">
+                    <apex:commandButton action="{!savePrev}" value="< Previous Year"/>
+                </apex:outputPanel>&nbsp;&nbsp;
+                <apex:outputPanel rendered="{!IF(year != '2021', true, false)}">
+                    <apex:commandButton action="{!saveNext}" value="Next Year >"/>
+                </apex:outputPanel>
+                
+            </apex:pageBlockButtons>
+            <apex:pageBlockTable value="{!OpplstToPass}" var="opp">
+                <apex:column headerValue="Month">
+                    <apex:outputText value="{0,date,MMM-yy}">
+                        <apex:param value="{!opp.month}"/>
+                    </apex:outputText> 
+                </apex:column>
+                <apex:column headerValue="New Opportunity Volume (kwh)">
+                    <apex:outputText value="{0, number, #,###}">
+                        <apex:param value="{!opp.newOpptys}" />
+                    </apex:outputText>
+                </apex:column>
+                <apex:column headerValue="Won Opportunity Volume (kwh)">
+                    <apex:outputText value="{0, number, #,###}">
+                        <apex:param value="{!opp.wonOpptys}" />
+                    </apex:outputText>
+                </apex:column>
+                <apex:column headerValue="Month Win %">
+                    <apex:outputText escape="false" value="{!opp.monthlyWinRate}"/>&nbsp;<apex:outputPanel rendered="{!IF(opp.monthlyWinRate != null, true, false)}"><b>%</b></apex:outputPanel>
+                </apex:column>
+                <apex:column headerValue="3 Month Win %">
+                    <apex:outputText escape="false" value="{!opp.threeMonthWinRate}"/>&nbsp;<apex:outputPanel rendered="{!IF(opp.threeMonthWinRate != null, true, false)}"><b>%</b></apex:outputPanel>
+                </apex:column>
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+        
+    </apex:form>
+    
+    
+    
+</apex:page>

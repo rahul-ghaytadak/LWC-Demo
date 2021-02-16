@@ -1,0 +1,3 @@
+.THIS .slds-form-element__label {  font-weight: bold;}
+.THIS .slds-select_container::after {margin-bottom: 15px; }
+.THIS .slds-select_container .slds-select {margin-bottom: 15px;}

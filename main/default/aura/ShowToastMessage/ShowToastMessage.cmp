@@ -1,0 +1,18 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction,lightning:availableForFlowScreens" access="global">
+
+<aura:handler name="init" value="{!this}" action="{!c.init}" />
+<aura:handler event="aura:doneRendering" action="{!c.doneRendering}"/>
+    <aura:html tag="style">
+        .slds-modal__container {
+             width : 0% !important;
+             max-width : 0% !important;
+             display:none !important;
+         }
+            .slds-backdrop{
+            display:none !important;
+            }
+            
+    </aura:html>
+    a
+    
+</aura:component>

@@ -1,0 +1,19 @@
+.THIS .Adjustwidth{
+    max-width:328px !important;
+    min-width:328px !important;
+}
+.THIS .slds-modal__container{
+        max-width: 80rem !important;
+        width:55% !important;
+        }
+
+.THIS .slds-m-right--small1{
+    width:100% !important;
+}
+.THIS .slds-lookup{
+    overflow-y: hidden !important;
+    height : 250px !important;
+}
+.THIS .CPMUserclass .slds-lookup .slds-form-element {
+    border: none !important;
+}

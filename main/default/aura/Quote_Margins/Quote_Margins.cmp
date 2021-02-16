@@ -1,0 +1,188 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction"
+                access="global" 
+                controller="Create_Quote_Controller">
+    <!-- call doInit method on component load -->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <!--aura:handler name="change" value="{!v.salesMargin}" action="{!c.changeSalesMargin}"/>
+    <aura:handler name="change" value="{!v.brokerMargin}" action="{!c.changebrokerMargin}"/-->
+    <!-- aura attributes to store data/values --> 
+    <aura:attribute name="listOfAllPS" type="list"/>
+    <aura:attribute name="PaginationList" type="list"/> 
+    <aura:attribute name="selectedCount" type="integer" default="0"
+                    description="selected Records Count"/>
+    <aura:attribute name="recordId" type="string"/> 
+    <aura:attribute name="startPage" type="Integer" />
+    <aura:attribute name="endPage" type="Integer"/>
+    <aura:attribute name="totalRecordsCount" type="Integer"/>
+    <aura:attribute name="pageSize" type="Integer" default="5"
+                    description="number of records to be display on per page"/>
+    <aura:attribute name="currentPage" type="integer" default="1"/>
+    <aura:attribute name="totalPagesCount" type="integer"/>
+    <aura:attribute name="bNoRecordsFound" type="boolean"/>
+    <aura:attribute name="AverageLoadFactor" type="decimal"/>
+    <aura:attribute name="sort" type="String" default="DESC"/>
+    <aura:attribute name="sortAsc" type="boolean" default="false"/>
+    <aura:attribute name="selectedTabsoft" type="string" default="Price" description="Use for show/hide arraow sign on header based on conditions"/>
+    <aura:attribute name="arrowDirection" type="string" default="arrowup" description="Use for change arrow sign direction on header based on click"/>
+    <aura:attribute name="confirmation" type="boolean" default="true"/>
+    <aura:attribute name="checkSM" type="boolean" default="false"/>
+    <aura:attribute name="currentPageNumber" type="Integer" default="1"/>
+    <aura:attribute name="totalPages" type="Integer" default="0"/>
+    <aura:attribute name="pageList" type="List"/>    
+    <aura:attribute name="showOverRide" type="boolean" default = "false"/>
+    <aura:attribute name="showOverRideNew" type="boolean" default = "false"/>
+    <aura:attribute name="Validated" type="boolean" default = "true"/> 
+    <aura:attribute name="mylabel" type="Decimal" />
+    <aura:attribute name="selectedProductName" type="String" />   
+    <aura:attribute name="selectedPriceId" type="String" />   
+    <aura:attribute name="salesMargin" type="Decimal" default = "0.0035"/>   
+    <aura:attribute name="newSalesMargin" type="Decimal" default = ""/>   
+    <aura:attribute name="brokerMargin" type="Decimal" default = "0.0000"/>
+    <aura:attribute name="totalPrice" type="Decimal" default = "0.0000"/>    
+    <aura:attribute name="spinner" type="boolean" default = "false"/> 
+    <aura:attribute name="selectedstoreVolumn" type="string" />
+    
+    <aura:if isTrue="{!v.bNoRecordsFound}">
+        <!--display error message if there is no records available -->
+        <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info" role="alert">
+            <span class="slds-assistive-text">error</span>
+            <h2>No record found.</h2>
+        </div>
+        <aura:set attribute="else">
+            <!-- lightning:button to get selected rows data -->
+            <article class="slds-card">
+                    <aura:if isTrue="{!v.spinner}">
+                        <div aura:id="spinnerId" class="slds-spinner_container">
+                            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                                <span class="slds-assistive-text">Loading...</span>
+                                <div class="slds-spinner__dot-a"></div>
+                                <div class="slds-spinner__dot-b"></div>
+                            </div>
+                        </div>
+                    </aura:if>
+                    
+                    
+                    <!-- data table start-->  
+                    <table class="slds-table slds-table_bordered slds-table_cell-buffer" style="margin-top: -17px;"> <!-- -->
+                        
+                        <thead>
+                            <tr  style = "background:#F3F2F2">
+                                <td  style = "font-size:14px"> 
+                                    <lightning:icon iconName="custom:custom67" size="small"/>
+                                    &nbsp;<b>Apply Margins</b>
+                                </td> 
+                                <td colspan="2"> &nbsp;</td>
+                                <td>
+                                    <!--lightning:input aura:id = "salesMargin" label="Sales Margin : " type="number"  value="{!v.salesMargin}" formatter="currency" step="0.0001"  /-->
+                                   <input type="number" class="slds-input" value="{!v.salesMargin}" id="salesMargin" name="salesMargin" onchange="{! c.changeSalesMargin }" step="0.00001"/>
+                                </td>
+                                <td align="left">
+                                    <input type="number" class="slds-input" value="{!if(v.brokerMargin != 0, v.brokerMargin, 0.00000) }" id="brokerMargin" name="brokerMargin" onchange="{! c.changebrokerMargin }" step="0.00001"/>
+                                </td>
+                                <td colspan="2">&nbsp;</td>
+                            </tr>
+                            <tr class="">
+                                <th class="slds-is-sortable " scope="col" onclick="{!c.sortByTerm}">
+                                    <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
+                                        <span class="slds-assistive-text">Sort</span>
+                                        <span class="slds-truncate" title="Name">Term</span>  
+                                        <aura:if isTrue="{! and(v.arrowDirection == 'arrowdown', v.selectedTabsoft == 'Term') }">&nbsp;  &#9660; </aura:if>  
+                                        <aura:if isTrue="{! and(v.arrowDirection != 'arrowdown', v.selectedTabsoft == 'Term') }"> &nbsp;  &#9650; </aura:if>                        
+                                    </a>
+                                </th>
+                                
+                                <th scope="col">Volume(kWh)</th>
+                                <th scope="col">Base Price</th>
+                                <th  style = "padding-left: 25px;" scope="col">Sales Margin </th>
+                                <th  style = "padding-left: 25px;" scope="col">Broker Margin </th>
+                                <th class="slds-is-sortable " scope="col" onclick="{!c.sortByTotalPrice}">
+                                    <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
+                                        <span class="slds-assistive-text">Sort</span>
+                                        <span class="slds-truncate" title="Name">Total Price</span>  
+                                        <aura:if isTrue="{! and(v.arrowDirection == 'arrowdown', v.selectedTabsoft == 'totalPrice') }">&nbsp;  &#9660; </aura:if>  
+                                        <aura:if isTrue="{! and(v.arrowDirection != 'arrowdown', v.selectedTabsoft == 'totalPrice') }"> &nbsp;  &#9650; </aura:if>                        
+                                    </a>
+                                </th>
+                                <th scope="col">Gross Margin</th>
+                                
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <aura:iteration items="{!v.listOfAllPS}" var="obj" indexVar="index">
+                                <tr>
+                                    <th  style = "padding-left: 40px;" scope="row">
+                                        <div class="slds-truncate" title="{!obj.objAccount.Term_months__c}">
+                                            <lightning:formattedNumber value = "{!obj.objAccount.Term_months__c}"/>
+                                        </div>
+                                    </th> 
+                                    <th style = "" scope="row">
+                                        <div class="slds-truncate" title="{!obj.objAccountCumulative_Volume__c}">
+                                            <lightning:formattedNumber value = "{!obj.objAccount.Cumulative_Volume__c}" />
+                                        </div>
+                                    </th>
+                                    <th scope="row">
+                                        <div class="slds-truncate" title="{!obj.objAccount.Base_Price__c}">
+                                            <lightning:formattedNumber  value = "{!obj.objAccount.Base_Price__c}"  maximumFractionDigits="5" minimumFractionDigits="5"  style="currency"/>
+                                        </div>
+                                        
+                                    </th>
+                                    <th scope="row"  >
+                                        <div class="slds-truncate" title="" style = "">
+                                            <input type="number" class="slds-input" id="{!index}" value="{!obj.salesMargin}"  name="salesMargin" onchange="{! c.calculateTotalPrice }" step="0.00001"/>
+                                        </div>
+                                    </th>
+                                    <th scope="row">
+                                        <div class="slds-truncate" style = "" >
+                                            <input type="number" class="slds-input" id="{!index}" value="{!obj.brokerMargin}"  name="brokerMargin" onchange="{! c.calculateTotalPriceBroker }" step="0.00001"/>
+                                        </div>
+                                    </th>
+                                    <th  style = "padding-left: 25px;" scope="row">
+                                        <div class="slds-truncate">
+                                            <lightning:formattedNumber style ="currency"  aura:id="totalPrice" value="{!obj.totalPrice}" maximumFractionDigits="5" minimumFractionDigits="5"  formatter="currency" step="0.01"/>
+                                        </div>
+                                    </th>
+                                    <th scope="row" >
+                                        <div class="slds-truncate" style = "margin-left: 20px;">
+                                            <lightning:formattedNumber style ="currency" aura:id ="smv" maximumFractionDigits="0" minimumFractionDigits="0" type="number" value="{!obj.newSalesMargin}"  />
+                                        </div>
+                                    </th>
+                                </tr>
+                            </aura:iteration>
+                        </tbody>
+                    </table>
+                    <!-- DataTable End -->
+                    <br/>
+                    <div>
+                        <aura:if isTrue="{!v.checkSM}">
+                            <span class = "slds-align_absolute-center">
+                                <ui:inputCheckbox class="myCheckbox" aura:id="checkbox" change="{!c.confirmation}" label="&nbsp; I confirm I wish to proceed with the quote with this level of margin."  value="false"/>
+                            </span>
+                        </aura:if>
+                            <aura:if isTrue="{!v.Validated}">
+    
+    <aura:set attribute="else">
+       <div class="ValidationCSS slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info" role="alert">
+            <span class="slds-assistive-text">error</span>
+           <h2><b style="color:#ffc34d;">In order to generate quote</b><br /> <b>1. 4th decimal of total price should be either '4' or '9'</b><br /><b>2. 5th decimal of total price should be '0'</b></h2>
+        </div>
+    </aura:set>
+  </aura:if>
+                        
+                        <span style = "float:right; margin-right:25px;"> 
+                            <aura:if isTrue= "{!and(v.showOverRide,v.Validated == false)}">
+                                <lightning:input style="display:inline-block;" aura:id="CPR" type="checkbox" checked="" label="Override Price Validation" name="input2" onchange="{!c.allowNext}"/>
+                            </aura:if>
+                            <aura:if isTrue= "{!v.showOverRideNew}">
+                                <lightning:input style="display:inline-block;" aura:id="CPRNew" type="checkbox" checked="true" label="Override Price Validation" name="input2" onchange="{!c.allowNextNew}"/>
+                            </aura:if>
+                            <lightning:button label="Generate Quote"
+                                              class = "slds-button_brand"        
+                                              onclick="{!c.generateQuote}"
+                                              disabled = "{!v.Validated == false || v.confirmation == false}"
+                                              name="generate"/> 
+                        </span>
+                    </div>
+            </article>
+        </aura:set> 
+    </aura:if>
+</aura:component>

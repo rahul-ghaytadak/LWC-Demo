@@ -1,0 +1,163 @@
+<aura:component implements="force:appHostable,lightning:availableForFlowScreens,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction"
+                access="global" 
+                controller="Create_Opportunity">
+    <aura:attribute name="reloadPage" type="boolean" default = "false"/>
+    <aura:attribute name="showScreen3" type="boolean" default="false"/>
+    <aura:handler name="oSelectedRecordEvent" event="c:selectedsObjectRecordEvent" action="{!c.handleComponentEvent}"/>
+    <aura:attribute name="InvoiceBillingType" type="list" default="['Summary Billing','Single Account Billing']" />
+    <aura:attribute name="showInvoiceBillingType" type="boolean" default = "false"/> 
+    <aura:attribute name="selectedUserId" type="User" />
+    <aura:attribute name="selectedContacts" type="list" />
+    <aura:attribute name="PricingListToPass" type="sObject" default="{}" />
+    <aura:attribute name="selectedSaleType" type="String"/>
+    <aura:attribute name="contractId" type="String" />
+    <aura:attribute name="productId" type="String" />
+    <aura:attribute name="selectedBillType" type="String" />
+    <aura:attribute name="selectedProductFamily" type="String" default='Fixed' />
+    <aura:attribute name="selectedProduct" type="String" default='Fully Fixed'/>
+    <aura:attribute name="BrokerMargin" type="currency" />
+    <aura:attribute name="CreatePricingRequest" type="boolean" default = "true"/>
+    <aura:attribute name="CreatePricingRequest1" type="boolean" default = "false"/>
+    <aura:attribute name="ShowCreatePricingRequest" type="boolean" default = "false"/>
+    <aura:attribute name="spinner" type="boolean" default = "false"/>
+    <aura:attribute name="SaleType" type="list" default="['New']" />
+    <aura:attribute name="SwitchingType" type="list" default="['On-Cycle','Off-Cycle']" />
+    <aura:attribute name="BillType" type="list" default="['POR','Dual']" />
+    <aura:attribute name="ProductFamily" type="list" />
+    <aura:attribute name="Product" type="list" />
+    <aura:attribute name="State" type="String" />
+    <aura:registerEvent name="cmpEvent" type="c:ComponentEvent"/>
+    <aura:attribute name="CustomerAcc" type="Object" />
+    <aura:handler name="change" value="{!v.selectedBrokerAccount}" action="{!c.editAccount}"/>
+    <aura:attribute name="selectedAccountId" type="String" />
+    <aura:attribute name="showErrorborder" type="String" default = "yes"/>
+    <aura:registerEvent name="oSelectedRecordEvent" type="c:selectedsObjectRecordEvent"/>
+    <aura:attribute name="selectedBrokerContact" type="sObject" default="{}"/>
+    <aura:attribute name="BrokerType" type="string" default="Broker"/>
+    <aura:attribute name="SelectedCPM" type="sObject" />
+   <aura:handler name="change" value="{!v.SelectedCPM}" action="{!c.editCPMUser}"/>
+     <aura:attribute name="selectedBrokerAccount" type="sObject" default="" />
+     <aura:attribute name="BrokerAcc" type="Object" />
+     <aura:attribute name="brokerId" type="Object" />
+    <aura:attribute name="recordId" type="string"/>
+    <aura:attribute name="OppId" type="string"/>
+<aura:attribute name="duedateValidation" type="boolean" default = "true"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:html tag="style">
+        .cuf-content {
+        padding: 0 0rem !important;
+        }
+        .slds-modal__container{
+        max-width: 80rem !important;
+        width:55% !important;
+        }
+        .slds-p-around--medium {
+        padding: 0rem !important;
+        }       
+        .slds-modal__content{
+        overflow-y: hidden !important;
+        height:unset !important;
+        max-height:unset !important;
+        }
+    </aura:html>
+    <force:recordData aura:id="recordLoader"
+                      recordId="{!v.brokerId}" 
+                      targetFields="{!v.BrokerAcc}"
+                      targetError="{!v.recordLoadError}"
+                      recordUpdated="{!c.doInit}"
+                      fields="Id,Name"
+      />
+    <aura:if isTrue ="{!v.ShowCreatePricingRequest == false}">
+    <article class="slds-card" style="margin-top:30px;">
+        <div class="slds-page-header" role="banner" style="margin-top: -30px;padding-top: 15px;padding-bottom: 15px;">
+            <div class="slds-grid">
+                <div class="slds-col slds-has-flexi-truncate">
+                    <div class="slds-media slds-no-space slds-grow">
+                        <div class="slds-media__figure">
+                            <lightning:icon iconName="standard:opportunity" size="small"/>
+                        </div>
+                        <div class="slds-media__body" style=" font-size:14px; padding-top: 3px">
+                            <b>Create New Opportunity</b>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        
+        <div style="background-color:white;" class="slds-card__body slds-card__body_inner">
+            <div class="slds-grid slds-gutters">
+                <div class="slds-col slds-size_1-of-2" style="min-height:350px">
+                    <span>
+                        <!-- lightning:button to get selected rows data -->
+                        <aura:if isTrue="{!v.spinner}">
+                            <div aura:id="spinnerId" class="slds-spinner_container">
+                                <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                                    <span class="slds-assistive-text">Loading...</span>
+                                    <div class="slds-spinner__dot-a"></div>
+                                    <div class="slds-spinner__dot-b"></div>
+                                </div>
+                            </div>
+                        </aura:if>
+                        
+                        <div>       
+                            <b>Opportunity Detail</b></div>
+                        <div style="margin-top:20px;"></div>
+                        <lightning:select required="true" class="slds-m-right--small1" label="Sale Type" aura:id="selectSaleType">
+                            <aura:iteration items="{!v.SaleType}" var="val">
+                                <option value="{!val}" selected="{!val==v.selectedSaleType}"> {!val}</option>
+                            </aura:iteration>
+                        </lightning:select>	
+                        <lightning:select required="true" class="slds-m-right--small1" label="Switching Type" aura:id="selectSwitchingType">
+                            <aura:iteration items="{!v.SwitchingType}" var="val">
+                                <option value="{!val}" > {!val}</option>
+                            </aura:iteration>
+                        </lightning:select>	
+                        <lightning:input style="margin-top:5px;max-width:416px" type="number" aura:id="BrokerMargin" label="Broker Margin" formatter="currency" step="0.00001" value="{!v.BrokerMargin}" />
+                        <div style="height:50px !important;margin-top:10px;max-width:416px;">
+                            CPM User
+                            <c:customLookup showErrorborder ="No" objectAPIName="User" contactRole="" ShowMsg="false" selectedRecord="{!v.SelectedCPM}" showButton="false" NoContactRoleerror=" " placeholder="search users"/>
+                        </div> 
+                        <lightning:input style="margin-top:23px;margin-bottom:20px;" aura:id="CPR" type="checkbox" label="Create Pricing Request?" name="input2" checked="{!v.CreatePricingRequest}" onchange="{!c.CPRcheck}"/>
+                    </span>
+                </div>
+                 <div class="slds-col slds-size_1-of-2" style="min-height:350px">
+                        <b>Broker</b>
+                            <div style="margin-top:20px;"></div>
+                        <div style="height:50px !important;margin-top:10px;max-width:416px;">
+                            <span style="color:red">*</span>Broker Account
+                            <c:customLookup showErrorborder ="yes" aura:id="BrokerLookup" objectAPIName="Account" BrokerType="{!v.BrokerType}" NoContactRoleerror="" IconName="standard:account" selectedRecord="{!v.selectedBrokerAccount}" 
+                                            label="Account Name" placeholder="Search Account.." showButton="false" showButtonAccount="true" />
+                     </div>
+                     <div style="height:50px !important;margin-top:30px;max-width:416px;">
+                            <span style="color:red">*</span>Broker Contact
+                            
+                            <c:customLookup showErrorborder ="yes" objectAPIName="Contact" contactRole="Broker" NoContactRoleerror="" accId="{!v.selectedAccountId}" IconName="standard:contact" selectedRecord="{!v.selectedBrokerContact}"
+                                            label="Contact" showButton="true"/>
+                     </div>
+                    </div>
+            </div>
+            
+        </div>
+        <footer class="slds-card__footer" style="padding-bottom: 57px !important;background-color:#F8F8F8;padding-top: 0px;margin-top: -49px;">
+        <span style="display:inline-block; margin-top:17px;float:right">
+            <lightning:button label="Next"
+                              variant="brand"
+                              onclick="{!c.CreatePricingRequest }"
+                              name="next"/>
+        </span>
+        <span style="display:inline-block;margin-right:10px; margin-top:17px;float:left">
+            <lightning:button label="Previous"
+                              variant="brand"
+                              onclick="{!c.handlePrevious }"
+                              name="previous"/>
+        </span>
+    </footer>
+    </article>
+    
+    </aura:if>
+    <aura:if isTrue ="{!v.ShowCreatePricingRequest}">
+         <!--c:Create_PricingRequest accIdfromSC2 = "{!v.recordId}" fromOppScreen2 = "{!v.ShowCreatePricingRequest}" recordId="{!v.OppId}" NewOppId="{!v.OppId}"/-->
+        <c:Create_PricingRequest State= "{!v.State}" PricingListToPass = "{!v.PricingListToPass}" productId="{!v.productId}" contractId = "{!v.contractId}" accIdfromSC2 = "{!v.recordId}" fromOppScreen2 = "{!v.ShowCreatePricingRequest}" recordId="{!v.OppId}" NewOppId="{!v.OppId}"/>
+    </aura:if>
+</aura:component>

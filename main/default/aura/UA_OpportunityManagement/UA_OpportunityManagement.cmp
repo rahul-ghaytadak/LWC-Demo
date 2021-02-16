@@ -1,0 +1,294 @@
+<aura:component controller="UA_OpportunityManagement_Handler" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader" access="global" >
+    
+    <aura:attribute name="accept" type="List" default="['.csv']"/>
+    <aura:attribute name="recordId" type="Id" access="public" />
+    <aura:attribute name="AccRecId" type="Id" access="public" />
+    <aura:attribute name="multiple" type="Boolean" default="true"/>
+    <aura:attribute name="disabled" type="Boolean" default="false"/>
+    <aura:attribute name="fileName" type="String" default=" " />
+    <aura:attribute name="errorMessage" type="String"  />
+    <aura:attribute name="showSpinner" type="Boolean" default="false" />
+    <aura:attribute name="showSpinnerFullScreen" type="Boolean" default="false" />
+    <aura:attribute name="showSpinnerWhenExecute" type="Boolean" default="false" />
+    <aura:attribute name="oppRecord" type="Object"/>
+    <aura:attribute name="recordLoadError" type="String"/>
+    <aura:attribute name="UA_DisplayList" type="Object"/>
+    <aura:attribute name="tooltip" type="boolean" default="false" />
+    <aura:attribute name="displayExecute" type="boolean" default="false" />
+    <aura:attribute name="clickExecute" type="boolean" default="false" />
+    <aura:attribute name="disabledDisplayExecute" type="boolean" default="true" />   
+    <aura:attribute name="showSpinnerOnProceed" type="boolean" default="false" />
+    <aura:attribute name="screen2" type="boolean" default="false" />
+    <aura:attribute name="UAOTodelete" type="Object"/>
+    <aura:attribute name="UARelatedUAOWillBeInseted" type="Object"/>
+    <aura:attribute name="UtilityWillBeInserted" type="Object"/>
+    <aura:attribute name="UAOWillBeInsertedWithUA" type="Object"/>
+    <aura:attribute name="displayMessage" type="boolean" default="true" />
+    
+    <aura:html tag="style">
+        .cuf-content {
+        padding: 0 0rem !important;
+        }
+        .slds-modal__container{
+        max-width: 80rem !important;
+        width:65% !important;
+        }
+        .slds-p-around--medium {
+        padding: 0rem !important;
+        }       
+
+    </aura:html>
+    
+    <force:recordData aura:id="recordLoader"
+                      recordId="{!v.recordId}"
+                      fields="AccountId,ContactId,State__c "
+                      targetFields="{!v.oppRecord}"
+                      targetError="{!v.recordLoadError}"
+                      />
+    
+    <article class="slds-card" >
+        <aura:if isTrue="{!v.showSpinnerFullScreen}">
+           <div aura:id="spinnerId" class="slds-spinner_container">
+                            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                                <span class="slds-assistive-text">Loading...</span>
+                                <div class="slds-spinner__dot-a"></div>
+                                <div class="slds-spinner__dot-b"></div>
+                            </div>
+                        </div>
+        </aura:if>
+        
+        <!-- <div class="modal-header slds-modal__header slds-size_1-of-1">
+            <h4 class="title slds-text-headingmedium">Utility Account Alignment</h4>    
+            
+        </div>-->
+        
+        
+        <div class="slds-p-around_medium" style="{!if(v.showSpinnerFullScreen,'opacity:0','')}">
+            <lightning:layout class="layMargin">
+                
+                <lightning:layoutItem padding="" size="5">
+                    
+                    <center>
+                        <lightning:card > 
+                            <div>
+                                <span >
+                                    <lightning:icon class='icon-container' iconName="doctype:csv" />
+                                </span>
+                                <span class=" slds-text-heading_small" > Upload Utility Account </span>
+                            </div>
+                            <aura:if isTrue="{!v.showSpinner}">
+                               <div aura:id="spinnerId" class="slds-spinner_container">
+                            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                                <span class="slds-assistive-text">Loading...</span>
+                                <div class="slds-spinner__dot-a"></div>
+                                <div class="slds-spinner__dot-b"></div>
+                            </div>
+                        </div>
+                            </aura:if>
+                            <div> 
+                                <lightning:input type="file" class="file  .slds-file-selector__body" aura:id="file" 
+                                                 onchange="{!c.handleFilesChange}"  accept=".csv"  multiple="false"/>
+                                
+                                <div class="slds-text-body_small">{!v.fileName} </div>
+                                <p class="slds-align_absolute-left clr">{!v.errorMessage}</p>
+                            </div>
+                        </lightning:card>
+                    </center>
+                    
+                </lightning:layoutItem>
+                <lightning:layoutItem padding="" size="7">
+                    <aura:if isTrue="{!v.displayMessage}">
+                        <div class="slds-text-align_center slds-p-top_large">
+                            Upload a file to continue
+                        </div>
+                        
+                    </aura:if>
+                    <aura:if isTrue="{!v.screen2}">
+                        <lightning:layoutItem padding="" size="12">
+                            <aura:if isTrue="{!v.showSpinnerOnProceed}">
+                                <div aura:id="spinnerId" class="slds-spinner_container">
+                            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                                <span class="slds-assistive-text">Loading...</span>
+                                <div class="slds-spinner__dot-a"></div>
+                                <div class="slds-spinner__dot-b"></div>
+                            </div>
+                        </div>
+                            </aura:if>
+                            <table class="slds-table slds-m-left_medium ">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" >
+                                            <div class="slds-cell-wrap">
+                                                <aura:if isTrue="{!v.UA_DisplayList.UAOTodelete.length >0}" >{!v.UA_DisplayList.UAOTodelete.length}<aura:set attribute="else">0</aura:set></aura:if> UAs will be removed from the Opportunity.
+                                            </div>
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="col" >
+                                            
+                                            <div class="slds-cell-wrap">
+                                                <aura:if isTrue="{!v.UA_DisplayList.UARelatedUAOWillBeInseted.length >0}" >{!v.UA_DisplayList.UARelatedUAOWillBeInseted.length}<aura:set attribute="else">0</aura:set></aura:if> UAs will be added to the Opportunity.
+                                            </div>
+                                            
+                                        </th>
+                                    </tr>
+                                    <tr >
+                                        <th scope="col" >
+                                            <div class="slds-cell-wrap">
+                                                <aura:if isTrue="{!v.UA_DisplayList.UtilityWillBeInserted.length >0}" >{!v.UA_DisplayList.UtilityWillBeInserted.length}<aura:set attribute="else">0</aura:set></aura:if> UAs will be created and added to the Opportunity. 
+                                            </div>
+                                        </th>
+                                    </tr>
+                                    <tr >
+                                        <th scope="col" >
+                                            <div class="slds-cell-wrap"><aura:iteration items="{!v.UA_DisplayList.UAWithDifferentAcc}" var="lineItem" indexVar="index"><lightning:icon iconName="utility:warning" class="fillColorWarning" size="x-small"/>&nbsp;&nbsp; There are <aura:if isTrue="{!lineItem.UAWithDifferentAccount.length > 0}" ><a href="" aria-describedby="help" onmouseover="{!c.showToolTip}">{!lineItem.UAWithDifferentAccount.length}</a><aura:set attribute="else">0</aura:set></aura:if> UAs that are in Salesforce and associated to a different Customer.</aura:iteration>
+                                                <!-- <aura:if isTrue="{!v.UA_DisplayList.UAWithDifferentAcc.length >0}" >
+                                            <a href="" aria-describedby="help" onmouseover="{!c.showToolTip}"><lightning:icon iconName="utility:info_alt" size="x-small"/>&nbsp;&nbsp;</a><lightning:icon iconName="custom:custom47" size="x-small"/>&nbsp;Utility Accounts
+                                        </aura:if>-->
+                                                <div role="dialog" tabindex="-1" aria-labelledby="header43" aura:id="ModalboxUA" class="slds-modal">
+                                                    <div class="slds-modal__container" style = "width: 45% !important;">
+                                                        <div class="slds-modal__header" style="">
+                                                            <button class="slds-button slds-modal__close slds-button--icon-inverse" title="Close" onclick="{!c.HideToolTip}">
+                                                                <lightning:buttonIcon iconName="utility:close" alternativeText="close" class="changeColor" variant="bare-inverse" size="large" />
+                                                                <span class="slds-assistive-text">Close</span>
+                                                            </button>
+                                                            <h2 id="header43" class="slds-text-heading--medium">UTILITY ACCOUNTS</h2>
+                                                        </div>
+                                                        <div class="slds-modal__content addScroll" style="padding: 0rem 1rem 1rem 1rem !important;">
+                                                            <div>
+                                                                <div class="slds-grid slds-wrap ">
+                                                                    <span>
+                                                                        <aura:iteration items="{!v.UA_DisplayList.UAWithDifferentAcc}" var="lineItem" indexVar="index">
+                                                                            <aura:iteration items="{!lineItem.CustomerAcc}" var="valueOfAcc" indexVar="index">
+                                                                                <br></br>
+                                                                                <b> <a href="{!'/one/one.app?#/sObject/'+ valueOfAcc.Id + '/view'}" target="_blank" onclick="{!c.applyCSS}"> {!valueOfAcc.Name}</a> </b>
+                                                                                <aura:iteration items="{!lineItem.UAWithDifferentAccount}" var="valueUA" indexVar="index">
+                                                                                    
+                                                                                    <aura:if isTrue = "{!equals(valueOfAcc.Name,valueUA.Account__r.Name)}">
+                                                                                        <div class="slds-col slds-size_12-of-12">
+                                                                                            <a href="{!'/one/one.app?#/sObject/'+ valueUA.Id + '/view'}" target="_blank" onclick="{!c.applyCSS}"> {!valueUA.Name}</a> 
+                                                                                        </div>
+                                                                                    </aura:if>
+                                                                                </aura:iteration>
+                                                                                
+                                                                            </aura:iteration>
+                                                                            
+                                                                        </aura:iteration>
+                                                                    </span>
+                                                                    
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                    </div>
+                                                </div>
+                                                <div class="slds-backdrop " aura:id="ModalbackdropUA"></div>                                  
+                                                
+                                            </div>
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="col">
+                                            <div class="slds-cell-wrap">These UAs will not be updated and require manual intervention.</div>
+                                        </th>
+                                    </tr>
+                                    <aura:if isTrue="{!v.UA_DisplayList.UAStateNotMatch.length >0}" >
+                                     <tr >
+                                        <th scope="col" >
+                                            <div class="slds-cell-wrap"><lightning:icon iconName="utility:warning" class="fillColorWarning" size="x-small"/>&nbsp;&nbsp;There are <!--<a href="" aria-describedby="help" onmouseover="{!c.showToolTipForNoStateMatch}">-->{!v.UA_DisplayList.UAStateNotMatch.length}<!--</a>--> UAs in the file that are not from the State of {!v.oppRecord.State__c} and will not be processed.
+                                            <div>
+                                            
+                                          <!--  <div role="dialog" tabindex="-1" aria-labelledby="header43" aura:id="ModalNoStatematchUA" class="slds-modal" >
+                                                    <div class="slds-modal__container" style = "width: 45% !important;">
+                                                        <div class="slds-modal__header" style="background: #f3f2f2;">
+                                                            <button class="slds-button slds-modal__close " title="Close" onclick="{!c.HideToolTipNoStateMatch}">
+                                                                <lightning:buttonIcon iconName="utility:close" alternativeText="close" class="changeColor" variant="bare-inverse" size="large" />
+                                                                <span class="slds-assistive-text">Close</span>
+                                                            </button>
+                                                            <h2 id="header43" class="">UTILITY ACCOUNTS</h2>
+                                                        </div>
+                                                        <div class="slds-modal__content addScroll" style="padding: 0rem 1rem 1rem 1rem !important;">
+                                                            <div>
+                                                                <div class="slds-grid slds-wrap ">
+                                                                    <span>
+                                                                        <aura:iteration items="{!v.UA_DisplayList.UAStateNotMatch}" var="lineItem" indexVar="index">
+                                                                                    
+                                                                                        <div class="slds-col slds-size_12-of-12">
+                                                                                            <a href="{!'/one/one.app?#/sObject/'+ lineItem.Id + '/view'}" target="_blank" onclick="{!c.applyCSS}"> {!lineItem.Name}</a> 
+                                                                                        </div>
+                                                                                </aura:iteration>
+
+                                                                    </span>
+                                                                    
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                    </div>
+                                                </div>-->
+                                            </div>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                    </aura:if>
+                                    <tr>
+                                        <aura:if isTrue="{!v.clickExecute}" >
+                                            <div>
+                                                <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                                                    <div class="slds-modal__container" style="">
+                                                        <!-- Modal/Popup Box Header Starts here-->
+                                                        <header class="slds-modal__header" style="border-top-left-radius: 12px;border-top-right-radius: 12px;background-color:#f3f2f2;">
+                                                            
+                                                            <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">
+                                                                <b style="font-size:16px;margin-right: 30px;">Do you want to Execute all operations?</b> 
+                                                                
+                                                            </h2>
+                                                        </header>
+                                                        <!--Modal/Popup Box Body Starts here-->
+                                                        <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                                                            <div class="slds-align_absolute-center">
+                                                                <lightning:button label="Cancel"
+                                                                                  disabled =""
+                                                                                  variant="brand"
+                                                                                  onclick="{!c.HideExecutPopup }"
+                                                                                  name="Cancel"/>
+                                                                <lightning:button label="Proceed"
+                                                                                  disabled =""
+                                                                                  variant="brand"
+                                                                                  onclick="{!c.CreateUAWithUAO }"
+                                                                                  name="Proceed"/>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        
+                                                    </div>
+                                                </section>
+                                            </div>
+                                        </aura:if>
+                                        
+                                    </tr>
+                                </thead>
+                            </table>
+                            
+                        </lightning:layoutItem>
+                    </aura:if>
+                </lightning:layoutItem>
+            </lightning:layout>
+        </div>
+        
+        <div class="modal-footer slds-modal__footer slds-size_1-of-1" style="{!if(v.showSpinnerFullScreen,'opacity:0','')}">
+            <!--<lightning:button label="Previous"
+                                  disabled =""
+                                  variant="brand"
+                                  onclick="{!c.previous }"
+                                  name="Previous"/>
+                <aura:if isTrue="{!v.displayExecute}" >-->
+            <lightning:button label="Execute"
+                              disabled ="{!v.disabledDisplayExecute}"
+                              variant="brand"
+                              onclick="{!c.OpenWarning }"
+                              name="Execute"/>
+            <!--</aura:if>-->
+        </div>
+    </article>
+</aura:component>

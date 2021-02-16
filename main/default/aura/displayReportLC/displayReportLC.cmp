@@ -1,0 +1,6 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+	
+    
+    <iframe src="/00O3i000000leiWEAQ?isdtp=lt" scrolling="true"  height="1588px"  width="100%"/> 
+    
+</aura:component>

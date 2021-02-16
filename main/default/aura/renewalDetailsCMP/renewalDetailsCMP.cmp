@@ -1,0 +1,79 @@
+<aura:component controller="renewalDetails" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="recordId" type="string"/>
+    <aura:attribute name="recordResponse" type="object"/>
+    
+    <div class="slds-page-header slds-page-header_record-home" style="padding: 0 !important;">
+        <div class="slds-page-header__row slds-p-around_small" style="border-bottom: 1px solid #dddbda;">
+            <div class="slds-page-header__col-title">
+                <div class="slds-media">
+                    <div class="slds-media__figure">
+                        <lightning:icon iconName="custom:custom18" size="small"/>
+                    </div>
+                    <div class="slds-media__body" style="font-size:14px; padding-top: 3px">
+                        <div class="slds-page-header__name">
+                            <div class="slds-page-header__name-title">
+                                <b>Existing Contract</b>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slds-page-header__row slds-page-header__row_gutters">
+            <div class="slds-page-header__col-details ">
+                <lightning:layout class="slds-grid listDisplays">
+                    <lightning:layoutItem padding="" size="12">
+                        <table class="slds-text-color_weak slds-table slds-table_cell-buffer">
+                            <tr>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="Customer"> Contract Start Date:</div>
+                                </td>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" >{!v.recordResponse.StartDate}</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="Utility">Term (Months):</div>
+                                </td>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="">
+                                        {!v.recordResponse.ContractTerm}
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="Product">Contracted Price:</div>
+                                </td>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="">{!v.recordResponse.Output_Total_Unit_Price__c }</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="Customer Number">SEUS Margin:</div>
+                                </td>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" >{!v.recordResponse.Opportunity__r.Point_of_Sale_SEUS_Margin__c}</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="Start Date">Broker Margin:</div>
+                                </td>
+                                <td scope="col">
+                                    <div class="slds-truncate slds-cell-wrap" title="">
+                                        {!v.recordResponse.Opportunity__r.Broker_Margin_per_unit__c}
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                    </lightning:layoutItem>
+                </lightning:layout>
+            </div>
+        </div>
+    </div>
+</aura:component>

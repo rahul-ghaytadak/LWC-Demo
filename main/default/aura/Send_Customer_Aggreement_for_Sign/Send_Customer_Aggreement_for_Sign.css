@@ -1,0 +1,24 @@
+.THIS .abc svg{
+    fill:black;
+    margin-bottom:3px;
+    cursor:pointer;
+}
+
+.THIS .abcd:hover svg{
+    fill:black;
+    cursor:pointer;
+}
+
+.THIS .bl svg{
+    cursor:pointer;
+    
+}
+
+.THIS .colgreen svg{
+    fill:green;
+    cursor:pointer;
+}
+
+.THIS .changeMe{
+    color:blue;
+}

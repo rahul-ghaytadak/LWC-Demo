@@ -1,0 +1,276 @@
+<aura:component controller="EOS_DataWindowController" implements="flexipage:availableForRecordHome,force:hasRecordId" access="global" >
+    
+    <aura:attribute name="ledgerSummary" type="Object"/> 
+    <aura:attribute name="invoiceUAs" type="list"/>
+    <aura:attribute name="billingAccountNumber" type="String"/>
+    <aura:attribute name="spinnerChild" type="boolean"  default=""/>
+    <aura:attribute name="expandedAll" type="boolean" default="false"/>
+    <aura:attribute name="spinner" type="boolean" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="errorMessage" type="String"/>
+    <aura:attribute name="BANUA" type="String"/>
+    
+    <lightning:buttonIcon class="slds-float_right slds-m-around_xx-small" size="medium" iconName="utility:refresh" variant="bare" alternativeText="Refresh" title="Refresh" onclick="{!c.refreshData}"/>
+    <div class="slds-box" style="overflow-y:auto">
+        <lightning:spinner class="slds-hide" variant="brand" size="medium" aura:id="Spinner"/>
+        <aura:if isTrue="{!and(empty(v.errorMessage), not(empty(v.ledgerSummary)))}">
+            <div class="slds-form slds-form_horizontal" role="list">
+                <div class="slds-form__row">
+                    <div class="slds-form__item" role="listitem">
+                        <div class="slds-form-element slds-form-element_edit slds-form-element_readonly slds-form-element_stacked slds-hint-parent">
+                            <span class="slds-form-element__label"> Billing Account Id</span>
+                            <div class="slds-form-element__control">
+                                <div class="slds-form-element__static">{!v.ledgerSummary.model[0].billingAccountId}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slds-form__item" role="listitem">
+                        <div class="slds-form-element slds-form-element_readonly slds-form-element_stacked slds-hint-parent">
+                            <span class="slds-form-element__label">Blling Account Number</span>
+                            <div class="slds-form-element__control">
+                                <div class="slds-form-element__static">{!v.ledgerSummary.model[0].billingAccountNumber}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br/>
+            <table aura:id="maintable" class="slds-table slds-table_cell-buffer slds-table_bordered">
+                <thead>
+                    <tr class="slds-line-height_reset">
+                        <th class="" scope="col">
+                            <div  class="" scope="col" >
+                                <lightning:buttonIcon alternativeText="More Details" variant="bare"  title="{!v.expandedAll?'Collapse All':'Expand All'}"  onclick="{!c.toggleExpandCollapse}" iconName="{!v.expandedAll?'utility:chevrondown':'utility:chevronright'}" />
+                            </div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="AR Type">AR Type</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Invoice Number">Id</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Post Date">Post Date</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Transaction Date">Transaction Date</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Description">Description</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Amount">Amount</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Balance">Balance</div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <aura:iteration items="{!v.ledgerSummary.model}" var="item" indexVar="itemIndex">
+                        
+                        <tr>
+                            <td scope="row" >
+                                <div >
+                                    <aura:if isTrue="{!item.arType == 'Invoice'}">
+                                        <lightning:buttonIcon  alternativeText="More Details" variant="bare"  title="More" value="{!itemIndex}" onclick="{!c.toggle}" iconName="{!item.expanded?'utility:chevrondown':'utility:chevronright'}" />
+                                    </aura:if>
+                                </div>
+                            </td>    
+                            <td data-label="AR Type" scope="row">
+                                <div class="slds-truncate" title="AR Type">
+                                    <lightning:formattedText value="{!item.arType}"/>
+                                </div>
+                            </td>
+                            <td data-label="Invoice Number" scope="row">
+                                <div class="slds-truncate" title="AR Type">
+                                    {!item.refNumber}
+                                </div>
+                            </td>
+                            <td data-label="Post Date">
+                                <div class="slds-truncate" title="Post Date"><lightning:formattedDateTime  value="{!item.postDateTime}" /></div>
+                            </td>
+                            <td data-label="Transaction Date">
+                                <div class="slds-truncate" title="Transcation Date"><lightning:formattedDateTime  value="{!item.transactionDateTime}" /></div>
+                            </td>
+                            <td data-label="description">
+                                <div class="slds-truncate" title="Description">{!item.description}</div>
+                            </td>
+                            <td data-label="Amount">
+                                <div class="slds-truncate" title="Amount"><lightning:formattedNumber value="{!item.amount}" style="currency" currencyCode="USD"/></div>
+                            </td>
+                            <td data-label="balance">
+                                <div class="slds-truncate" title="balance">
+                                    <div class="slds-truncate" title="Balance"><lightning:formattedNumber value="{!item.balance}" style="currency" currencyCode="USD"/></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <aura:if isTrue="{!item.expanded}" >
+                            <tr class=""> 
+                                <aura:if isTrue="{!item.arType == 'Invoice'}">
+                                    <td colspane ="1" style="background-color:inherit !important"></td>
+                                    <td colspan="7" style="background-color:inherit !important">
+                                        <!-- UA Table -->
+                                        <table aura:id="innerTable2" class="tableMargin slds-table slds-table_cell-buffer slds-table_bordered">
+                                            <thead>
+                                                <tr class="slds-line-height_reset">
+                                                    <th class="headerBG" scope="col" style="width:5.4%"></th>
+                                                    <th class="headerBG" scope="col">
+                                                        <div class="slds-truncate" title="Utility Account">Utility Account</div>
+                                                    </th>
+                                                    <th class="headerBG" scope="col">
+                                                        <div class="slds-truncate" title="Address">Address</div>
+                                                    </th>
+                                                    <th class="headerBG" scope="col">
+                                                        <div class="slds-truncate" title="Service Period">Service Period</div>
+                                                    </th>
+                                                    <th class="headerBG" scope="col">
+                                                        <div class="slds-truncate" title="Quantity">Quantity</div>
+                                                    </th>
+                                                    <th class="headerBG" scope="col">
+                                                        <div class="slds-truncate" title="Energy Charges">Energy Charges</div>
+                                                    </th>
+                                                    <th class="headerBG" scope="col">
+                                                        <div class="slds-truncate" title="Utility Charges">Utility Charges</div>
+                                                    </th>
+                                                    <th class="headerBG" scope="col">
+                                                        <div class="slds-truncate" title="Other Charges">Other Charges</div>
+                                                    </th>
+                                                    <th class="headerBG" scope="col">
+                                                        <div class="slds-truncate" title="Tax Charge">Tax Charge</div>
+                                                    </th>
+                                                    <th class="headerBG" scope="col">
+                                                        <div class="slds-truncate" title="Total Amount">Total Amount</div>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <aura:iteration items="{!v.ledgerSummary.invoices}" var="inv" indexVar="invIndex">
+                                                    <aura:if isTrue="{!item.refNumber == inv.invoiceNumber}">
+                                                        <aura:iteration items="{!inv.invoiceUtilityAccounts}" var="ua" indexVar="uaItemIndex">
+                                                            <tr>
+                                                                <td scope="row" >
+                                                                    <div >
+                                                                        <lightning:buttonIcon alternativeText="More Details" variant="bare" name="{!invIndex}" title="Expand" value="{!uaItemIndex}" onclick="{!c.invoiceUAToggle}" iconName="{!ua.UAExpanded?'utility:chevrondown':'utility:chevronright'}" />
+                                                                    </div>
+                                                                </td>    
+                                                                <td data-label="Utility Account" scope="row">
+                                                                    <div class="slds-truncate" title="Utility Account">
+                                                                        <lightning:formattedText value="{!ua.utilityAccountNumber}"/>
+                                                                    </div>
+                                                                </td>
+                                                                <td data-label="Address">
+                                                                    <div class="slds-truncate" title="Address"> <lightning:formattedText value="{!ua.serviceAddressLine1}"/> </div>
+                                                                </td>
+                                                                <td data-label="Service Period">
+                                                                    <div class="slds-truncate" title="Service Period"><lightning:formattedDateTime  value="{!ua.utilityServicePeriodStartDate}" /> - <lightning:formattedDateTime  value="{!ua.utilityServicePeriodStartDate}" /></div>
+                                                                </td>
+                                                                <td data-label="Quantity">
+                                                                    <div class="slds-truncate" title="Quantity">{!ua.quantity}</div>
+                                                                </td>
+                                                                <td data-label="Energy Charges">
+                                                                    <div class="slds-truncate" title="Energy Charges"><lightning:formattedNumber value="{!ua.energyCharges}" style="currency" currencyCode="USD"/></div>
+                                                                </td>
+                                                                <td data-label="Utility Charges">
+                                                                    <div class="slds-truncate" title="Utility Charges"><lightning:formattedNumber value="{!ua.utilityCharges}" style="currency" currencyCode="USD"/></div>
+                                                                </td>
+                                                                <td data-label="Other Charges">
+                                                                    <div class="slds-truncate" title="Other Charges">
+                                                                        <div class="slds-truncate" title="Other Charges"><lightning:formattedNumber value="{!ua.otherCharges}" style="currency" currencyCode="USD"/></div>
+                                                                    </div>
+                                                                </td>
+                                                                <td data-label="Tax Charges">
+                                                                    <div class="slds-truncate" title="Tax Charges">
+                                                                        <div class="slds-truncate" title="Tax Charges"><lightning:formattedNumber value="{!ua.taxCharges}" style="currency" currencyCode="USD"/></div>
+                                                                    </div>
+                                                                </td>
+                                                                <td data-label="Total Amount">
+                                                                    <div class="slds-truncate" title="Total Amount">
+                                                                        <div class="slds-truncate" title="Total Amount"><lightning:formattedNumber value="{!ua.totalAmount}" style="currency" currencyCode="USD"/></div>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            <aura:if isTrue="{!ua.UAExpanded}" >
+                                                                <tr class="slds-hint-parent"> 
+                                                                    <td colspane ="1" style="background-color:inherit !important"></td>
+                                                                    <td colspan="9" style="background-color:inherit !important">
+                                                                        <table class="tableMargin slds-table slds-table_cell-buffer slds-table_bordered">
+                                                                            <thead>
+                                                                                <tr class="slds-line-height_reset">
+                                                                                    <th class="headerBG" scope="col">
+                                                                                        <div class="slds-truncate" title="Charge Type Category">Charge Type Category</div>
+                                                                                    </th>
+                                                                                    <th class="headerBG" scope="col">
+                                                                                        <div class="slds-truncate" title="Charge Type Category Description">Charge Type Category Description</div>
+                                                                                    </th>
+                                                                                    <th class="headerBG" scope="col">
+                                                                                        <div class="slds-truncate" title="Service Period">Service Period</div>
+                                                                                    </th>
+                                                                                    <th class="headerBG" scope="col">
+                                                                                        <div class="slds-truncate" title="Quantity">Quantity</div>
+                                                                                    </th>
+                                                                                    <th class="headerBG" scope="col">
+                                                                                        <div class="slds-truncate" title="uom">UOM</div>
+                                                                                    </th>
+                                                                                    <th class="headerBG" scope="col">
+                                                                                        <div class="slds-truncate" title="Rate">Rate</div>
+                                                                                    </th>  
+                                                                                    <th class="headerBG" scope="col">
+                                                                                        <div class="slds-truncate" title="Amount">Amount</div>
+                                                                                    </th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                <aura:iteration items="{!ua.utilityChargeDetails}" var="ucd" indexVar="ucdIndex">
+                                                                                    <tr>
+                                                                                        <td data-label="Charge Type Category">
+                                                                                            <div class="slds-truncate" title="Charge Type Category Description">{!ucd.chargeType}</div>
+                                                                                        </td>
+                                                                                        <td data-label="Charge Type Category Description">
+                                                                                            <div class="slds-truncate" title="Charge Type Category Description">{!ucd.chargeDescription}</div>
+                                                                                        </td>
+                                                                                        <td data-label="Service Period">
+                                                                                            <div class="slds-truncate" title="Service Period"><lightning:formattedDateTime  value="{!ucd.chargeServicePeriodStart}" /> - <lightning:formattedDateTime  value="{!ucd.chargeServicePeriodStart}" /></div>
+                                                                                        </td>
+                                                                                        <td data-label="Quantity">
+                                                                                            <div class="slds-truncate" title="Quantity">{!ucd.quantity}</div>
+                                                                                        </td>
+                                                                                        <td data-label="UOM">
+                                                                                            <div class="slds-truncate" title="UOM">{!ucd.uom}</div>
+                                                                                        </td>
+                                                                                        <td data-label="Rate">
+                                                                                            <div class="slds-truncate" title="Rate"><lightning:formattedNumber value="{!ucd.rate}" style="currency" currencyCode="USD"/></div>
+                                                                                        </td>
+                                                                                        <td data-label="Amount">
+                                                                                            <div class="slds-truncate" title="Amount"><lightning:formattedNumber value="{!ucd.amount}" style="currency" currencyCode="USD"/></div>
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                </aura:iteration>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </td>
+                                                                </tr></aura:if>
+                                                        </aura:iteration>
+                                                    </aura:if>
+                                                </aura:iteration>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </aura:if>
+                            </tr>
+                        </aura:if>
+                    </aura:iteration>
+                </tbody>
+            </table>
+            <aura:set attribute="else">
+                <aura:if isTrue="{!not(empty(v.errorMessage))}">
+                    <div class="slds-box slds-theme--shade  slds-theme_alert-texture">
+                        <p>{!v.errorMessage}</p>
+                    </div>
+                </aura:if>
+            </aura:set>
+        </aura:if>
+    </div>
+    
+    
+</aura:component>

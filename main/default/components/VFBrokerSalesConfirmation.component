@@ -1,0 +1,172 @@
+<apex:component controller="VFBrokerSalesConfirmationController"  access="global" >
+    
+    <p>
+        <img src="{!$Resource.Logo}"  width="55%" height="25%"/>
+    </p>
+    <apex:attribute name="oppIdValue" description="Attribute for Contract Id" type="String" assignTo="{!oppId}" />
+    
+    <div style = "text-align:center; ">
+        <b style = "font-family:Arial; font-size:12px; color:#172b4d"> Deal Confirmation </b>
+        
+        <span style="color:#172b4d; font-size:12px;float:right"><b>Date:</b> &nbsp; <apex:outputText style="color: #C00000" value="{0,date,MM'/'dd'/'yyyy}"><apex:param value="{!dateToday}"/></apex:outputText></span>
+    </div>
+    
+    <apex:variable value="{!1}" var="rowNum"/>
+    
+    <div style = "background-color:#D8D8D8">
+        <span style = "font-family:Arial; font-size:11px; margin-left:17%;  color:#172b4d">
+            Customer: <span style="color:#C00000">{!custName}</span>
+        </span> 
+        <span style="color:#172b4d;font-family:Arial; font-size:11px; margin-left:17%;">
+            Channel Partner: <span style="color:#C00000"> {!BrokerName} </span>
+        </span>
+    </div>
+    <br/>
+    <div style = "font-size:9px;max-height:364px;font-family:Arial;text-align:center">
+        <table border="0" width="100%" cellpadding="0" cellspacing="0" >
+            <thead >
+                <tr >
+                    <td style=" vertical-align:top; ">
+                        <table border="1"  cellpadding="0" cellspacing="0"  >
+                            <thead style="background-color: #D8D8D8;">
+                                <tr>
+                                    <th  scope="col" colspan="5" style="color:#172b4d;text-align:center;">
+                                        <div class="slds-truncate" title="Table Title"> Account Information</div>
+                                    </th>
+                                </tr>
+                                <tr >
+                                    <th  scope="col" style="color:#4472C4;text-align:center">
+                                        <div class="slds-truncate" title="Opportunity Name">#</div>
+                                    </th>
+                                    <th scope="col" style="color:#4472C4;text-align:center">
+                                        <div class="slds-truncate" title="Account Name">Account #</div>
+                                    </th>
+                                    <th  scope="col" style="color:#4472C4;text-align:center">
+                                        <div class="slds-truncate" title="Close Date">Service Address</div>
+                                    </th>
+                                    <th  scope="col" style="color:#4472C4;text-align:center">
+                                        <div class="slds-truncate" title="Stage">Annual Volume</div>
+                                    </th>
+                                    <th  scope="col" style="color:#4472C4;text-align:center">
+                                        <div class="slds-truncate" title="Confidence">Utility</div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <apex:repeat var="UA" value="{!UAORecords}">
+                                    
+                                    <tr class="s">
+                                        <td  scope="row"  style="color: #4472C4; padding: 3px 10px 3px 10px">
+                                            <div class="slds-truncate" title="counter">
+                                                <apex:outputText value="{!FLOOR(rowNum)}"/>
+                                                <apex:variable var="rowNum" value="{!rowNum + 1}"/>
+                                            </div>
+                                        </td>
+                                        <td style="color: #C00000; padding: 3px 10px 3px 10px">
+                                            {!UA.Utility_Account__r.Name}
+                                        </td>
+                                        <td  style="color: #C00000; padding: 3px 10px 3px 10px ">
+                                            {!UA.Utility_Account__r.Service_Address__c}
+                                        </td>
+                                        <td  style="color: #C00000; padding: 3px 10px 3px 10px ">
+                                            <apex:outputText value="{0, number, ###,##0}" id="myNumberDisplay" >
+                                                <apex:param value="{!UA.Utility_Account__r.Annual_Usage_kWh__c}"/>
+                                            </apex:outputText>
+                                            
+                                        </td>
+                                        <td  style="color: #C00000; padding: 3px 10px 3px 10px ">
+                                            {!UA.Utility_Account__r.Utility__r.Name} 
+                                        </td>
+                                    </tr>
+                                </apex:repeat>
+                                
+                            </tbody>
+                        </table>
+                    </td>
+                    <td style="vertical-align:top; height:350px; margin-left:10px;">
+                        <table  border="1"  cellpadding="0" cellspacing="0" >
+                            <tr>
+                                <th  scope="col" colspan="2" style="color:#172b4d;text-align:center;background-color: #D8D8D8;">
+                                    <div class="slds-truncate" title="Table Title"> Deal Specifics</div>
+                                </th>
+                            </tr>
+                            <tr><th style = "color:#4472C4;background-color: #D8D8D8;text-align:center;">Commodity</th><td style = "color:#C00000;padding: 3px 10px 3px 10px"> {!oppRecord.Commodity__c} </td></tr>
+                            <tr><th style = "color:#4472C4;background-color: #D8D8D8;text-align:center;">Billing Type</th><td style = "color:#C00000;padding: 3px 10px 3px 10px"> {!oppRecord.Bill_Type__c}  </td></tr>
+                            <tr><th style = "color:#4472C4;background-color: #D8D8D8;text-align:center;">Product Type</th><td style = "color:#C00000;padding: 3px 10px 3px 10px"> {!oppRecord.OpportunityLineItems[0].Product2.Name}</td></tr>
+                            <tr><th style = "color:#4472C4;background-color: #D8D8D8;text-align:center;">Term</th><td style = "color:#C00000;padding: 3px 10px 3px 10px"> {!oppRecord.Contract_Term__c}</td></tr>
+                            <tr><th style = "color:#4472C4;background-color: #D8D8D8;text-align:center;">Commission/kWh</th><td style = "color:#C00000;padding: 3px 10px 3px 10px"> ${!oppRecord.Broker_Margin__c}  </td></tr>
+                            <tr><th style = "color:#4472C4;background-color: #D8D8D8;text-align:center">Contract Price/kWh</th><td style = "color:#C00000;padding: 3px 10px 3px 10px"> ${!oppRecord.OpportunityLineItems[0].Total_Unit_Price__c}  </td></tr>
+                            <tr><th style = "color:#4472C4;background-color: #D8D8D8;text-align:center;">Expected Start Date</th><td style = "color:#C00000;padding: 3px 5px 3px 5px"> {!oppRecord.start_month__c}  </td></tr>
+                            <tr><th style = "color:#4472C4;background-color: #D8D8D8;text-align:center;">Expected End Date</th><td style = "color:#C00000;padding: 3px 10px 3px 10px">{!oppRecord.Expected_end_date__c}  </td></tr>
+                            <tr><th style = "color:#4472C4;background-color: #D8D8D8;text-align:center;">Estimated Contracted Volume (kWh)</th><td style = "color:#C00000;padding: 3px 10px 3px 10px"><apex:outputText value="{0, number, ###,##0}" id="myNumberDisplay" ><apex:param value="{!oppRecord.OpportunityLineItems[0].Volume_kWh__c}"/></apex:outputText>   </td></tr>
+                            <tr><th style = "color:#4472C4;background-color: #D8D8D8;text-align:center;">Commission Type	</th><td style = "color:#C00000;padding: 3px 10px 3px 10px">{!oppRecord.commission_type__c}  </td></tr>
+                        </table>
+                    </td>
+                </tr>
+                
+            </thead>
+        </table>
+    </div>
+    
+    <p style = "border-style: ridge; padding:5px 2px 5px 2px ;margin-top: 3%; font-size:10px; align: center; text-align:center;background-color: #D8D8D8; color:black;" class = "slds-box">
+        Please note that all data was supplied by the utility and is subject to change based on customers actual usage over the term of the agreement.  Start Date is also subject to change based on the the utilities acceptance of the successful enrollment.  The payment of commission is governed by your broker agreement with SmartestEnergy.  If you have any questions please contact your Channel Partner Manager or our Customer Care Team:  customer-services-us@smartestenergy.com or 1.800.448.0995
+    </p>
+    
+    
+    <div rendered="{!UAORecordsExtras != NULL}" style="font-family:Arial;font-size:9px">
+        <div style="page-break-after:always;"/>
+        <apex:variable value="{!10}" var="rowNumExtra"/>
+        <table border="1" width ="100%" style="font-size:12px;text-align:center" cellpadding="0" cellspacing="0">
+            <thead style="background-color: #D8D8D8;">
+                <tr>
+                    <th  scope="col" colspan="5" style="color:#172b4d;text-align:center;">
+                        <div class="slds-truncate" title="Table Title"> Additional Account Information</div>
+                    </th>
+                </tr>
+                <tr >
+                    <th  scope="col" style="color:#4472C4;text-align:center;padding-left:10px; padding-right:10px">
+                        <div class="slds-truncate" title="Opportunity Name">#</div>
+                    </th>
+                    <th scope="col" style="color:#4472C4;padding-left:10px;text-align:center; padding-right:10px">
+                        <div class="slds-truncate" title="Account Name">Account #</div>
+                    </th>
+                    <th  scope="col" style="color:#4472C4;padding-left:10px;text-align:center; padding-right:10px">
+                        <div class="slds-truncate" title="Close Date">Service Address</div>
+                    </th>
+                    <th  scope="col" style="color:#4472C4;padding-left:10px;text-align:center; padding-right:10px">
+                        <div class="slds-truncate" title="Stage">Annual Volume</div>
+                    </th>
+                    <th  scope="col" style="color:#4472C4;padding-left:10px;text-align:center; padding-right:10px">
+                        <div class="slds-truncate" title="Confidence">Utility</div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <apex:repeat var="UA" value="{!UAORecordsExtras}">
+                    <tr class="s" style="color: #C00000;">
+                        <td  scope="row"  style="color: #C00000; padding: 3px 10px 3px 10px">
+                            <div class="slds-truncate" title="counter">
+                                <apex:outputText value="{!FLOOR(rowNumExtra)}"/>
+                                <apex:variable var="rowNumExtra" value="{!rowNumExtra + 1}"/>
+                            </div>
+                        </td>
+                        <td style="color: #C00000;padding: 3px 10px 3px 10px">
+                            {!UA.Utility_Account__r.Name}
+                        </td>
+                        <td  style="color: #C00000;padding: 3px 10px 3px 10px">
+                            {!UA.Utility_Account__r.Service_Address__c}
+                        </td>
+                        <td  style="color: #C00000;padding: 3px 10px 3px 10px">
+                            <apex:outputText value="{0, number, ###,##0}" id="myNumberDisplay" >
+                                <apex:param value="{!UA.Utility_Account__r.Annual_Usage_kWh__c}"/>
+                            </apex:outputText>
+                        </td>
+                        <td  style="color: #C00000;padding: 3px 10px 3px 10px">
+                            {!UA.Utility_Account__r.Utility__r.Name}
+                        </td>
+                    </tr>
+                </apex:repeat>
+            </tbody>
+        </table>
+    </div>
+</apex:component>

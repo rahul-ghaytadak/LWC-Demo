@@ -1,0 +1,4 @@
+<aura:component implements="lightning:availableForFlowActions,force:lightningQuickActionWithoutHeader" access="global">
+    <aura:attribute name="recordId" type="string" access="global"/> 
+    <c:Create_Opportunity recordId="{!v.recordId}"/>
+</aura:component>

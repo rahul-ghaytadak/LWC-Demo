@@ -1,0 +1,36 @@
+<!-- 
+/***************************************************************************************************************************
+* Name:        Account_File_Uploader 
+* Description: Account_File_Uploader Component on Account.
+* 
+* Version History
+* Date             Developer               Comments
+* ************   *******************   ************************************************************************************
+* 2019-11-05       Aress Dev           Component to upload Utility Account CSV file.  
+****************************************************************************************************************************/-->
+
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" controller="Account_File_Uploader_Handler">
+    <aura:attribute name="accept" type="List" default="['.csv']"/>
+    <aura:attribute name="recordId" type="Id" access="public" />
+    <aura:attribute name="multiple" type="Boolean" default="true"/>
+    <aura:attribute name="disabled" type="Boolean" default="false"/>
+    <aura:attribute name="fileName" type="String" default="No File Selected.." />
+    <aura:attribute name="errorMessage" type="String"  />
+    <aura:attribute name="showSpinner" type="Boolean" default="false" />
+    <lightning:card > 
+        <div>
+            <span >
+                <lightning:icon class='icon-container' iconName="doctype:csv" />
+            </span>
+            <span class=" slds-text-heading_small" > Upload Utility Account </span>
+        </div>
+        <aura:if isTrue="{!v.showSpinner}">
+            <lightning:spinner />
+        </aura:if>
+        <div> 
+            <lightning:input type="file" class="file  .slds-file-selector__body" aura:id="file" 
+                             onchange="{!c.handleFilesChange}"  accept=".csv"/>
+            <p class="slds-align_absolute-left clr">{!v.errorMessage}</p>
+        </div>
+    </lightning:card>
+</aura:component>

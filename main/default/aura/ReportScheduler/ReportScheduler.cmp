@@ -1,0 +1,286 @@
+<aura:component controller="ReportSchedularController" implements="force:appHostable,flexipage:availableForAllPageTypes" access="global" >
+    <aura:attribute name="Time" type="String"/>
+    <aura:attribute name="customCallLog" type="Report_Schedular__c"/>
+    <aura:attribute name="showDayofWeek" type="boolean"/>
+    <aura:attribute name="showDayofMonth" type="boolean"/>
+    <aura:attribute name="schedReports" type="List"/>
+    <aura:attribute name="disabletoggle" type="boolean" default = "false"/> 
+    
+    <aura:attribute name="schedReportRecord" type="Report_Schedular__c" default="{}"/>
+    <lightning:spinner aura:id="Spinner" alternativeText="Loading" size="medium" variant="brand" class="slds-hide spinner" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <lightning:card title="Report Scheduler" iconName="utility:component_customization">
+        <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+            <thead>
+                <tr class="slds-line-height_reset">
+                    <th class="" scope="col" style="width:50px;">
+                        
+                    </th>
+                    <th class="" scope="col" style="width:50px;">
+                        
+                    </th>
+                    <th class="" scope="col" style="">
+                        <div class="slds-truncate" title="">Report Name</div>
+                    </th>
+                    <th class="" scope="col" >
+                        <div class="slds-truncate" title="">Time</div>
+                    </th> 
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="">Frequency</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="">Day of week</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="">Date of month</div>
+                    </th>
+                    <th class="" scope="col" >
+                        <div class="slds-truncate" title="">Recipient Mode</div>
+                    </th>
+                    <th class="" scope="col" >
+                        <div class="slds-truncate" title="">Report Data - No. of days</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="">Schedule/Unschedule</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title=""></div>
+                    </th>
+                    
+                </tr>
+            </thead>
+            <tbody>
+                <aura:iteration items="{!v.schedReports}" var = "item" indexVar="index">
+                    <tr>
+                        <aura:if isTrue="{!item.editRow}">
+                            <td data-label="" style="padding-left: 10px;">
+                            </td>
+                            <td data-label="" style="padding-left: 10px;">
+                                <div class="" title="">
+                                    <lightning:buttonIcon iconName="utility:check" variant="bare" value="{!index}" onclick="{! c.saveReport }" alternativeText="Save" title="Save" />
+                                    &nbsp;
+                                    <lightning:buttonIcon iconName="utility:close" variant="bare" value="{!index}" onclick="{! c.editRow }" alternativeText="Cancel" title="Cancel" />
+                                </div>
+                            </td>
+                            <td style="padding-bottom:23px;" data-label="">
+                                <div class="slds-truncate" title="">
+                                    <lightning:input type="text" name="" label="" value="{!item.RS.Name}"/>
+                                </div>
+                            </td>
+                            <td style="padding-bottom:23px;" data-label="">
+                                <div class="" title="">
+                                    <lightning:input  class="" type="time" name="" label="" value="{!item.RS.Time__c}"/>
+                                </div>
+                            </td>
+                            <td style="padding-bottom:23px;" data-label="">
+                                <div class="slds-truncate" title="">
+                                    <lightning:select name="select1" value="{!item.RS.Days__c}" onchange="{!c.selectFrequency}">
+                                        <option value="Everyday">Everyday</option>
+                                        <option value="Weekdays">Weekdays</option>
+                                        <option value="Monthly">Monthly</option>
+                                        <option value="Weekly">Weekly</option>
+                                    </lightning:select>
+                                </div>
+                            </td>
+                            
+                            <td style="padding-bottom:23px;" data-label="">
+                                <div class="" title="">
+                                    <!--lightning:input  class="" type="text" name="" label="" value="{!item.RS.Day_of_week__c}"/-->
+                                    <aura:if isTrue="{!item.RS.Days__c == 'Weekly'}">
+                                        <lightning:select name="selectweekday" value="{!item.RS.Day_of_week__c}">
+                                            <option value="MON">MON</option>
+                                            <option value="TUE">TUE</option>
+                                            <option value="WED">WED</option>
+                                            <option value="THU">THU</option>
+                                            <option value="FRI">FRI</option>
+                                        </lightning:select>
+                                    </aura:if>
+                                </div>
+                            </td>
+                            
+                            
+                            <td style="padding-bottom:23px;" data-label="">
+                                <div class="" title="">
+                                    <!--lightning:input  class="" type="text" name="" label="" value="{!item.RS.Date_of_month__c}"/-->
+                                    <aura:if isTrue="{!item.RS.Days__c == 'Monthly'}">
+                                        <lightning:select name="selectdate" value="{!item.RS.Date_of_month__c}">
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                            <option value="6">6</option>
+                                            <option value="7">7</option>
+                                            <option value="8">8</option>
+                                            <option value="9">9</option>
+                                            <option value="10">10</option>
+                                            <option value="11">11</option>
+                                            <option value="12">12</option>
+                                            <option value="13">13</option>
+                                            <option value="14">14</option>
+                                            <option value="15">15</option>
+                                            <option value="16">16</option>
+                                            <option value="17">17</option>
+                                            <option value="18">18</option>
+                                            <option value="19">19</option>
+                                            <option value="20">20</option>
+                                            <option value="21">21</option>
+                                            <option value="22">22</option>
+                                            <option value="23">23</option>
+                                            <option value="24">24</option>
+                                            <option value="25">25</option>
+                                            <option value="26">26</option>
+                                            <option value="27">27</option>
+                                            <option value="28">28</option>
+                                            <option value="29">29</option>
+                                            <option value="30">30</option>
+                                            <option value="31">31</option>
+                                        </lightning:select>
+                                    </aura:if>
+                                </div>
+                            </td>
+                            
+                            <td style="padding-bottom:23px;"  data-label="">
+                                <div class="slds-truncate" title="">
+                                    <lightning:select name="select1" value="{!item.RS.Send_Internally__c}">
+                                        <aura:if isTrue="{!item.RS.Send_Internally__c == true}">
+                                            <option value="true">Internal</option>
+                                            <option value="false">External</option>
+                                            <aura:set attribute="else">
+                                                <option value="false">External</option>
+                                            <option value="true">Internal</option>
+                                            </aura:set>
+                                        </aura:if>
+                                        
+                                    </lightning:select>
+                                </div>
+                            </td>
+                            <td style="padding-bottom:23px;" data-label="">
+                                <div class="slds-truncate" title="">
+                                    <lightning:input type="number" name="" label="" value="{!item.RS.Number_of_days__c}"/>
+                                </div>
+                            </td>
+                          
+                            <td data-label="">
+                                <div class="slds-truncate" title="">
+                                    <lightning:button label="Schedule" disabled="true" variant="Brand" onclick="{!c.schedReport}" value="{!index}"/>
+                                </div>
+                            </td>
+                            
+                            <td data-label="">
+                                <div class="slds-truncate" title="">
+                                    <lightning:button label="Run Now" iconName="utility:connected_apps" iconPosition="left" disabled="true" variant="Brand" onclick="{!c.RunNow}"/>
+                                </div>
+                            </td>
+                            
+                            <td data-label="">
+                                <div class="slds-truncate" title="">
+                                </div>
+                            </td>
+                            <aura:set attribute="else">
+                                <td data-label="" style="padding-left: 10px;">
+                                    <lightning:input type="toggle" name="toggleButton" aura:id="tglbtn" value="{!item.RS.Name}" checked="{!item.RS.Report_Scheduled__c}"
+                                                     messageToggleActive="On" messageToggleInactive="Off" 
+                                                     onchange="{!c.getToggleButtonValue}"/>
+                                </td>
+                                
+                                <td data-label="" style="padding-left: 10px;">
+                                    <div class="" title="">
+                                        
+                                        &nbsp;
+                                        <aura:if isTrue="{!item.RS.Report_Scheduled__c}">
+                                            <lightning:buttonIcon iconName="utility:edit" value="{!index}" variant="bare" onclick="{! c.editRow }" alternativeText="Edit" title="Edit" />
+                                        </aura:if>
+                                        &nbsp;
+                                        <lightning:buttonIcon iconName="utility:delete" variant="bare" value="{!index}" onclick="{! c.deleteRow }" alternativeText="Delete Rule" title="Delete Rule" />
+                                    </div>
+                                </td>
+                                
+                                <td data-label="">
+                                    <div class="slds-truncate" title="">
+                                        {!item.RS.Name}
+                                    </div>
+                                </td>
+                                <td data-label="">
+                                    <div class="slds-truncate" title="">
+                                        <aura:if isTrue="{!item.RS.Report_Scheduled__c}">
+                                            <lightning:formattedTime value="{!item.RS.Time__c}" />
+                                        </aura:if>
+                                    </div>
+                                </td>
+                                <td data-label="">
+                                    <div class="slds-truncate" title="">
+                                        <aura:if isTrue="{!item.RS.Report_Scheduled__c}">
+                                            {!item.RS.Days__c }
+                                        </aura:if>
+                                    </div>
+                                </td>
+                                
+                                <td style="padding-left: 30px;" data-label="">
+                                    <div class="slds-truncate" title="">
+                                        <aura:if isTrue="{!item.RS.Days__c == 'Weekly'}">
+                                            <aura:if isTrue="{!item.RS.Report_Scheduled__c}">
+                                                {!item.RS.Day_of_week__c }
+                                            </aura:if>
+                                        </aura:if>
+                                    </div>
+                                </td>
+                                
+                                
+                                <td style="padding-left: 40px;" data-label="">
+                                    
+                                    <div class="slds-truncate" title="">
+                                        <aura:if isTrue="{!item.RS.Days__c == 'Monthly'}">
+                                            <aura:if isTrue="{!item.RS.Report_Scheduled__c}">
+                                                {!item.RS.Date_of_month__c }
+                                            </aura:if>
+                                        </aura:if>
+                                    </div>
+                                </td>
+                                <td data-label="">
+                                    <div class="slds-truncate" title="">
+                                        <aura:if isTrue="{!item.RS.Report_Scheduled__c}">
+                                            <lightning:formattedText value="{!if(item.RS.Send_Internally__c, 'Internal','External')}" />
+                                        </aura:if>
+                                    </div>
+                                </td>
+                                <td data-label="" style="padding-left: 75px;">
+                                    <div class="slds-truncate" title="">
+                                        <aura:if isTrue="{!item.RS.Report_Scheduled__c}">
+                                            {!item.RS.Number_of_days__c}
+                                        </aura:if>
+                                    </div>
+                                </td>
+                                <td data-label="" style="padding-left: 10px;">
+                                    <lightning:input type="toggle" name="{!item.RS.Name}" aura:id="tglbtn" value="{!index}" checked="{!item.RS.Toggle1__c}"
+                                                     messageToggleActive="Scheduled" messageToggleInactive="Unscheduled" 
+                                                     onchange="{!c.schedReport}" disabled="{!empty(item.RS.Time__c)}" />
+                                </td>
+                                <!--td data-label="">
+                                    <div class="slds-truncate" title="">
+                                        <aura:if isTrue="{!item.RS.Report_Scheduled__c}">
+                                            <lightning:button label="Schedule" variant="Brand" onclick="{!c.schedReport}" value="{!index}" disabled="{!empty(item.RS.Time__c)}"/>
+                                        </aura:if>
+                                    </div>
+                                </td-->
+                                
+                                <td data-label="">
+                                    <div class="slds-truncate" title="">
+                                        <aura:if isTrue="{!item.RS.Report_Scheduled__c}">
+                                            <lightning:button label="Run Now" iconName="utility:connected_apps" iconPosition="left" variant="Brand" onclick="{!c.RunNow}" value="{!index}" disabled=""/>
+                                        </aura:if>
+                                    </div>
+                                </td>
+                            </aura:set>
+                        </aura:if>
+                        
+                    </tr>
+                </aura:iteration>
+            </tbody>
+        </table>
+        <lightning:button label="Add Row" class="slds-m-around--small" iconName="utility:add" iconPosition="left"  variant="brand" onclick="{!c.addRow}"/>
+    </lightning:card>
+    
+    <br/>
+    <c:Batch_Logs />
+</aura:component>

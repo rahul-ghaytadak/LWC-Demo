@@ -1,0 +1,55 @@
+.THIS .handleNext{
+    float: right;
+    margin-top: -12px;
+}
+.THIS .handlePrevious{
+    float: left;
+    margin-top: -12px;
+}
+.THIS .checkbox{
+    width:10px !important;
+}
+.THIS .select {height: 75px;}
+@media(max-width:700px){
+    .THIS .responsiveHide{
+        display : none !important;
+    }
+}
+.THIS .programCode{
+    width:100px
+}
+.THIS .status{
+    width:227px;
+}
+.THIS .slds-form-element__label{
+    Display:none !important;
+}
+.THIS .RSNLabel .slds-form-element__label{
+    Display:block !important;
+}
+
+.THIS .adjustButton{
+    margin-top: -15px;
+}
+
+.THIS .slds-datepicker__month tr>td:first-child {
+    padding-left:0px !important;
+    
+}
+
+.THIS .slds-datepicker__month tr>th {
+    padding-left:0px !important;
+    padding-left: 0px !important;
+}
+.THIS .slds-datepicker__month tr>td:last-child {
+    padding-right: 0px !important;
+    padding-left: 0px !important;
+}
+.THIS .slds-datepicker__month tr>th:last-child {
+    padding-right: 0px !important;
+    padding-left: 0px !important;
+}
+.THIS .slds-datepicker__month .slds-day{
+    margin:0px !important;
+}
+.THIS .slds-grid_align-end { justify-content: center !important; }

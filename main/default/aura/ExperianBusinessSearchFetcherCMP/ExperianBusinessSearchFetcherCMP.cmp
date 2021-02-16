@@ -1,0 +1,154 @@
+<aura:component controller = "ExperianBusinessSearchFetcher" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader" access="global" >
+    <aura:attribute name="accRec" type="Account" default="{ 'sobjectType': 'Account'}"/>
+    <aura:attribute name="recordId" type="String" />  
+    <aura:attribute name="brId" type="String" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/> 
+    <aura:attribute name ="comments" type = "String"/>
+    <aura:attribute name ="taxId" type = "String"/>
+    <aura:attribute name ="geo" type = "Boolean" Default = "False"/>
+    <aura:attribute name ="firstscreen" type = "Boolean" Default = "true"/>
+    <aura:attribute name ="secondscreen" type = "Boolean" Default = "true"/>
+    <aura:attribute name="spinner" type="boolean" default = "false"/>
+     <aura:attribute name ="resultList" type = "List"/>
+    <aura:html tag="style">
+         .slds-modal__container{
+        max-width: 70rem !important;
+        width:70% !important;
+        }
+        .cuf-content {
+            padding: 0 0rem !important;
+        }
+        .slds-p-around--medium {
+            padding: 0rem !important;
+        }       
+        .slds-modal__content{
+            overflow-y:hidden !important;
+            height:unset !important;
+            max-height:unset !important;
+        }
+    </aura:html>
+    <div style="padding-top:2px;padding-left:12px;padding-right:12px;">
+        <lightning:card>
+         <div class="modal-header slds-modal__header slds-size_1-of-1">
+        <h4 class="title slds-text-heading--medium" ><lightning:icon iconName="standard:account"/>&nbsp;&nbsp;Create Business Account</h4>
+    </div>
+            <!-- Body -->
+               <aura:if isTrue="{!v.firstscreen}">
+                <div style="background-color: #F3F2F2;height:30px;line-height: 10px;margin-bottom:7px;
+        padding: 10px;">Account Information</div>   
+                <div class="slds-grid slds-gutters">
+                <div class="slds-col slds-size_1-of-2">
+                
+                <lightning:input aura:id="accName"
+                                 label="Account Name"
+                                 type="String"
+                                 required="true"
+                                 value="{!v.accRec.Name}"/>
+                <lightning:input aura:id="accPhone"
+                                 label="Phone"
+                                 type="String"
+                                 value="{!v.accRec.Phone}"/>
+                <lightning:input aura:id="accCode"
+                                 label="Zip Code"
+                                 type="String"
+                                 value="{!v.accRec.BillingPostalCode}"/>
+                <lightning:input aura:id="accStreet"
+                                 label="Street"
+                                 type="String"
+                                 value="{!v.accRec.BillingStreet}"/>
+                    </div>
+                    <div class="slds-col slds-size_1-of-2">
+                <lightning:input aura:id="accCity"
+                                 label="City"
+                                 type="String"
+                                 required="true"
+                                 value="{!v.accRec.BillingCity}"/>
+                <lightning:input aura:id="accState"
+                                 label="State"
+                                 type="String"
+                                 required="true"
+                                 value="{!v.accRec.BillingState}"/>
+                <lightning:input aura:id="accComme"
+                                 label="comment"
+                                 type="String"
+                                 value="{!v.comments}"/>
+                
+                <lightning:input aura:id="acctaxId"
+                                 label="taxId"
+                                 type="String"
+                                 value="{!v.taxId}"/>
+                
+                
+                <ui:inputCheckbox aura:id="checkbox" label="geo" value= "{!v.geo}" change="{!c.onCheck}"/>
+                    </div>
+                    </div>
+                        <footer class="modal-footer slds-modal__footer" style="margin-left: -9px;
+                                                                       margin-right: -9px;
+                                                                       margin-bottom: -7px;
+                                                                       margin-top: 7px;">
+               
+                            <lightning:button 
+                                              label="Cancel"
+                                              onclick="{!c.callCancel}"/>  
+                        
+                            <lightning:button aura:id="saveId"
+                                              disabled="{!empty(v.accRec.Name) || empty(v.accRec.BillingCity) || empty(v.accRec.BillingState)}"
+                                  label="Next"
+                                  variant="brand"
+                                  onclick="{!c.nextScreen}"/>
+                     
+                </footer>
+            
+            <!--/ Body -->
+                   <aura:set attribute="else">
+                      <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                          <aura:if isTrue="{!v.spinner}">
+                    <div aura:id="spinnerId" class="slds-spinner_container">
+                        <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                            <span class="slds-assistive-text">Loading...</span>
+                            <div class="slds-spinner__dot-a"></div>
+                            <div class="slds-spinner__dot-b"></div>
+                        </div>
+                    </div>
+                </aura:if>
+                        <thead>                        
+                           <tr>
+                               <th class="slds-cell-wrap"></th>
+                               <th class="slds-cell-wrap">Business</th>
+                               <th class="slds-cell-wrap">Matching Name And Address</th>
+                               <th class="slds-cell-wrap">Business Identification No.</th>
+                               <th class="slds-cell-wrap">Tradelines Public Records, Collections</th>
+                               <th class="slds-cell-wrap">Reliability Code</th>
+                               
+                           </tr>
+                          </thead>
+                          <tbody>
+                            <aura:iteration items="{!v.resultList}" var="items" indexVar="index">
+                           <tr>
+                              <td style="padding-left: 0px;"><ui:inputCheckbox aura:id="checkContact"
+                                                 errors="{!items}" text="{!index}" change="{!c.checkboxSelect}"
+                                               />
+                                </td>                                              
+                               <td class="slds-cell-wrap">{!items.businessName}</td>
+                               <td class="slds-cell-wrap"><b>Matching Name:&nbsp;</b>{!items.matchingNameAndAddress.businessName}<br /><b>Address:&nbsp;</b>{!items.matchingNameAndAddress.address.street}&nbsp; {!items.matchingNameAndAddress.address.city}&nbsp; {!items.matchingNameAndAddress.address.state}&nbsp; {!items.matchingNameAndAddress.address.zip} &nbsp;{!items.matchingNameAndAddress.address.zipExtension}</td>
+                               <td class="slds-cell-wrap">{!items.bin}</td>
+                               <td class="slds-cell-wrap">{!items.numberOfTradelines}</td>
+                               <td class="slds-cell-wrap">{!items.reliabilityCode}</td>
+                               
+                           </tr>
+                           </aura:iteration>
+                          </tbody>
+                           </table>
+                       <footer class="modal-footer slds-modal__footer" style=" margin-bottom: -14px;margin-left: -11px;margin-right: -11px;margin-top: 47px;padding-bottom: 18px;">
+                           <lightning:button aura:id="saveId"
+                                             disabled="{!v.secondscreen}"
+                                             variant="brand"
+                                             label="Save"   
+                                             onclick="{!c.CreateAccount1}"/>
+                       </footer>
+                   </aura:set>
+                   
+            </aura:if>
+        </lightning:card>
+    </div>
+</aura:component>

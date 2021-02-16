@@ -1,0 +1,62 @@
+<aura:component controller="ActiveCCFlowController" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+	<lightning:spinner aura:id="Spinner" alternativeText="Loading" size="medium" variant="brand" class="slds-hide spinner" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="CCRecID" type="String" access="global" />
+    <aura:attribute name="utilityPremiums" type="List" access="global" />
+    <aura:attribute name="ccRecord" type="Object"/>
+    <aura:attribute name="recordLoadError" type="String"/>
+    <aura:attribute name="checker" type="boolean" default = "false"/>
+    <aura:attribute name="opp" type="Object"/>
+    <aura:attribute name="sObjectName" type="String"/>
+    <aura:attribute name="recordId" type="String"/>
+    <force:recordData aura:id="recordLoader"
+                      recordId="{!v.CCRecID}"
+                      fields="Credit_Check_Outcome__c, Credit_Premium_Applied__c,Credit_Rank_Formula__c"
+                      targetFields="{!v.ccRecord}"
+                      targetError="{!v.recordLoadError}"
+                      />
+     <lightning:card class="" title="Credit Premiums" iconName="custom:custom17"> 
+        <aura:if isTrue="{!not(empty(v.CCRecID))}">
+            <br/>
+            <!--<aura:if isTrue="{!v.ccRecord.Credit_Rank_Formula__c != ''}">-->
+                <div class="slds-grid slds-p-around--medium">
+                    <div class="slds-col slds-size_2-of-2">
+                        <b>Credit Premium:</b> 
+                        <br/>
+                        <table class="slds-table_bordered">
+                             <thead>
+                                    <tr class="slds-text-title_caps">
+                                        
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Utility Name"> Utility Name</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Credit Premium">Credit Premium</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="POR Rate">POR Rate</div> 
+                                        </th>
+                                    </tr>
+                                </thead>  
+                            <tbody>
+                            <aura:iteration items="{!v.utilityPremiums}" var="up" indexVar="key">
+                                <tr>
+                                    <td >{!up.Name}</td>
+                                    <td><lightning:formattedNumber style="currency" maximumFractionDigits = "5" minimumFractionDigits = "5" value = "{!up.SValue}" /></td>
+                                    <td><lightning:formattedNumber style="currency" maximumFractionDigits = "5" minimumFractionDigits = "5" value = "{!up.POR_Rate}" /></td>
+                                </tr>
+                            </aura:iteration>
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+              
+           <!-- </aura:if>-->
+            <aura:set attribute="else">
+                <div style="text-align:left" class="slds-p-around_x-small slds-theme--shade slds-theme--alert-texture" role="alert">
+                    <lightning:icon iconName="utility:info" alternativeText="Warning!" size="x-small" title="Warning" />&nbsp;Credit Premiums will be displayed once the Credit Rank has been calculated
+                </div>
+            </aura:set>
+        </aura:if>
+    </lightning:card>
+</aura:component>

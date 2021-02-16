@@ -1,0 +1,66 @@
+.THIS .slds-datepicker__month tr>td:first-child {
+    padding-left:0px !important;
+    
+}
+
+.THIS .slds-datepicker__month tr>th {
+    padding-left:0px !important;
+    padding-left: 0px !important;
+}
+.THIS .slds-datepicker__month tr>td:last-child {
+    padding-right: 0px !important;
+    padding-left: 0px !important;
+}
+.THIS .slds-datepicker__month tr>th:last-child {
+    padding-right: 0px !important;
+    padding-left: 0px !important;
+}
+.THIS .slds-datepicker__month .slds-day{
+    margin:0px !important;
+}
+.THIS .slds-grid_align-end { justify-content: center !important; }
+
+.THIS .abc:hover svg{
+    fill:#1798c1;
+    cursor:pointer;
+}
+
+.THIS.slds-modal {
+    width: 190%;
+    left: -45%;
+}
+.THIS.slds-modal:focus {
+    outline: none !important;
+}
+.THIS .slds-modal__content {
+    min-height: 5rem;
+}
+.THIS .slds-modal__container{
+    width:100%;
+}
+.THIS .heightClass{
+    
+    height:10px;
+}
+.THIS .showRecordsSelect{
+    margin-bottom:18px;
+}
+.THIS .slds-file-selector__dropzone{
+    width: 350px;
+    height: 15%;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+}
+
+.THIS .OneWidth{
+    
+    width:248px !important;
+}
+.THIS .slds-table--header-fixed_container:before {
+    height:13px;
+}
+.THIS .marginSelect{
+    margin-bottom:16px;
+}

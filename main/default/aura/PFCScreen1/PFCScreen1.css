@@ -1,0 +1,31 @@
+.THIS .slds-m-right--small{
+     width:346px !important;
+}
+
+.THIS .abc svg{
+    fill:black;
+    margin-bottom:3px;
+    cursor:pointer;
+}
+
+.THIS .abcd:hover svg{
+    fill:black;
+    cursor:pointer;
+}
+
+.THIS .bl svg{
+    cursor:pointer;
+    
+}
+
+.THIS .colgreen svg{
+    fill:green;
+    cursor:pointer;
+}
+
+.THIS .changeMe{
+    color:blue;
+}
+.THIS .fillColorWarning svg{
+    fill:#ea9022;
+}

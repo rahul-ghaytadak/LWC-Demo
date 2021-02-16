@@ -1,0 +1,536 @@
+<aura:component controller="PrepareForContractController" implements="flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global" >
+    
+    <aura:attribute name="showValidationScreen" type="boolean" default="false" />
+    <aura:attribute name="tooltip" type="boolean" default="false" />
+    <aura:attribute name="recordId" type="string"/>
+    <aura:attribute name="showOverRide" type="boolean" default = "false"/>
+    <aura:attribute name="showOverRideNew" type="boolean" default = "false"/>
+    <aura:attribute name="optionSelected" type="string"/>
+    <aura:attribute name="missedFields" type="string"/>
+    <aura:attribute name="Validated" type="boolean" default = "true"/> 
+    <aura:attribute name="quoteLineItems" type="list"/>
+    <aura:attribute name="Opp" type="object"/>
+    <aura:attribute name="oppRecord" type="object"/>
+    <aura:attribute name="spinner" type="boolean" default = "true"/> 
+    <aura:attribute name="selectedValue" type="String" />
+    <aura:attribute name="quoteOptions" type="String" />
+    <aura:attribute name="hasSelectedQLI" type="boolean" default="false" />
+    <aura:attribute name="showScreen1" type="boolean" default="true" />
+    <aura:attribute name="showScreen2" type="boolean" default="true" />
+    <aura:attribute name="showScreen3" type="boolean" default="false" />
+    <aura:attribute name="contactRoles" type="list"/>
+    <aura:attribute name="customerContactRole" type="object"/>
+    <aura:attribute name="brokerContactRole" type="object"/>
+    <aura:attribute name="customerContacts" type="list"/>
+    <aura:attribute name="totalPriceToPass" type="list"/>
+    <aura:attribute name="newCustomerContact" type="Contact"/>
+    <aura:attribute name="newBrokerContact" type="Contact"/>
+    <aura:attribute name="validationError" type="String" default='' />
+    <aura:attribute name="agreementDelivery" type="String" default='option1' />
+    
+    <aura:handler name="change" value="{!v.selectedCustomerContact}" action="{!c.editContactRoleCustomer}"/>
+    <aura:handler name="change" value="{!v.selectedBrokerContact}" action="{!c.editContactRole}"/>
+    
+    <aura:attribute name="selectedCustomerContact" type="sObject" default="{}"/>
+    <aura:attribute name="selectedBrokerContact" type="sObject" default="{}"/>
+    <aura:attribute name="editBroker" type="boolean" default="true" />
+    <aura:attribute name="editDM" type="boolean" default="true" />
+    <aura:attribute name="sendEmail" type="boolean" default="false" />
+    <aura:attribute name="ValidateCreditCheck" type="boolean" default="false" />
+    <aura:attribute name="seletedTerm" type="integer[]"/>
+    <aura:attribute name="billType" type="String"/>
+    
+    <aura:attribute name="options" type="List" default="[
+                                                        {'label': 'Send for Electronic Signature using Adobe Sign', 'value': 'option1'},
+                                                        {'label': 'Send for Wet Signature using Email', 'value': 'option2'},
+                                                        {'label': 'Generate Document', 'value': 'option3'}
+                                                        ]"/>
+    <aura:attribute name="value" type="String" default="option1"/>
+    
+    <!--aura:handler name="init" value="{!this}" action="{!c.doInit}"/-->
+    
+    <force:recordData aura:id="recordLoader"
+                      recordId="{!v.recordId}"
+                      fields="SyncedQuoteId, AccountId, Broker__c, Account.Name, Account_Name__c"
+                      targetFields="{!v.oppRecord}"
+                      recordUpdated="{!c.doInit}" 
+                      />
+    
+    <aura:html tag="style">
+        .cuf-content {
+        padding: 0 0rem !important;
+        }
+        .slds-modal__container{
+        max-width: 80rem !important;
+        width:80% !important;
+        }
+        .slds-p-around--medium {
+        padding: 0rem !important;
+        }       
+        .slds-modal__content{
+        height:unset !important;
+        max-height:unset !important;
+        }
+    </aura:html>
+    <aura:attribute name="oppty" 
+                    type="Opportunity" 
+                    default="{ 'sobjectType': 'Opportunity'}"/>
+    
+    <aura:if isTrue="{!v.spinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading...</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+    <aura:if isTrue="{!v.sendEmail == false}">
+        <div class="modal-header slds-modal__header slds-size_1-of-1">
+            <h4 class="title slds-text-heading--medium">Prepare For Contract</h4>
+            <aura:if isTrue="{!v.Opp.IsValid}">
+                <div style="float:right;margin-top: -28px;"><lightning:button label="Refresh" class="bl" iconName="utility:refresh" iconPosition="left" variant="brand" onclick="{!c.doRefresh}"/></div>
+            </aura:if>                                     
+        </div>
+        
+        <div class="slds-modal__content slds-p-around_medium slds-size_1-of-1 slds-is-relative">
+            <aura:if isTrue="{!v.showScreen1}">
+                <div class="slds-page-header" role="banner">
+                    <span style="display:inline-block; ">
+                        <h2>  <lightning:icon iconName="custom:custom18" size="small"/>
+                            &nbsp;<b>Quote Line Items ({!v.quoteLineItems.length})</b>
+                        </h2>
+                    </span>
+                    <span style="display:inline-block;margin-left: 250px;">
+                        <span style="display:inline-block; ">
+                            <b> <lightning:formattedText class = "slds-m-left--small" value="Bill Type: " /></b>
+                        </span>
+                        <span style="display:inline-block;">
+                            &nbsp;{!v.billType}
+                        </span>
+                    </span>
+                    <span style="display:inline-block; float:right; margin-top: -2%;">
+                        <span style="display:inline-block; ">
+                            <b> <lightning:formattedText class = "slds-m-left--small slds-m-right--small" value="Select Quote: " /></b>
+                        </span>
+                        <span style="display:inline-block;">
+                            <lightning:select name="selectQuote" label="" class="slds-m-right--small" aura:id="selectQuote" onchange="{!c.onQuoteChange}">
+                                <aura:if isTrue="{!empty(v.quoteOptions)}">
+                                    <option text="None Available" value="None Available" />
+                                </aura:if>
+                                <aura:iteration items="{!v.quoteOptions}" var="option">
+                                    <option text="{!option.quoteName+' - '+option.productName}" value="{!option.quoteId}" selected="{!option.isSynced}" />
+                                </aura:iteration>
+                            </lightning:select>
+                        </span>
+                    </span>
+                </div>
+                
+                <aura:if isTrue="{!not(empty(v.quoteLineItems))}">
+                    <table class="slds-table slds-table_bordered  slds-table_fixed-layout slds-table_cell-buffer"> 
+                        <thead>
+                            <tr class="">
+                                <th scope="col" style="width: 7%;"></th>
+                                <th scope="col">Product</th>
+                                <th scope="col">Term</th>
+                                <th scope="col">Total Usage</th>
+                                <th scope="col">Broker Margin </th>
+                                <th scope="col">Sales Margin </th>
+                                <th scope="col">Total Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <aura:iteration items="{!v.quoteLineItems}" var="lineItem" indexVar="index">
+                                <tr>
+                                    <td scope="row">
+                                        <div class="slds-truncate" title="Select Line Item">
+                                            <ui:inputCheckbox 
+                                                              name="{!lineItem.objQLI.Id}"
+                                                              value="{!lineItem.isChecked}"
+                                                              change="{!c.checkboxSelect}"
+                                                              />
+                                        </div>
+                                    </td>
+                                    <td scope="row">
+                                        <div class="slds-truncate" title="{!lineItem.objQli.Product2.Name}">
+                                            {!lineItem.objQLI.Product2.Name}
+                                        </div>
+                                    </td> 
+                                    <td style = "" scope="row">
+                                        <div class="slds-truncate" title="{!lineItem.objQLI.Term_Months__c}">
+                                            <lightning:formattedNumber value = "{!lineItem.objQLI.Term_Months__c}" />
+                                        </div>
+                                    </td>
+                                    <td scope="row">
+                                        <div class="slds-truncate" title="{!lineItem.objQLI.Total_Usage__c}">
+                                            <lightning:formattedNumber  value = "{!lineItem.objQLI.Total_Usage__c}" />
+                                        </div>
+                                    </td>
+                                    <td scope="row"  >
+                                        <div class="slds-truncate" title="" style = "">
+                                            <aura:if isTrue="{!lineItem.isChecked}">
+                                                <input type="number" class="slds-input" id ="{!index}" value="{!lineItem.objQLI.Broker_Margin_per_unit__c}"  name="brokerMargin" onchange="{! c.calculateTotalPrice }" step="0.00001"/>
+                                                <aura:set attribute="else">
+                                                    <lightning:formattedNumber style="currency" maximumFractionDigits = "5" minimumFractionDigits = "5"  value = "{!lineItem.objQLI.Broker_Margin_per_unit__c}" />
+                                                </aura:set>
+                                            </aura:if>
+                                        </div>
+                                    </td>
+                                    <td scope="row">
+                                        <div class="slds-truncate" style = "" >
+                                            <aura:if isTrue="{!lineItem.isChecked}">
+                                                <input type="number" class="slds-input" id="{!index}"  value="{!lineItem.objQLI.Sales_Margin_per_unit__c}"  name="salesMargin" onchange="{! c.calculateTotalPrice }" step="0.00001"/>
+                                                <aura:set attribute="else">
+                                                    <lightning:formattedNumber style="currency" maximumFractionDigits = "5" minimumFractionDigits = "5" value = "{!lineItem.objQLI.Sales_Margin_per_unit__c}" />
+                                                </aura:set>
+                                            </aura:if>
+                                        </div>
+                                    </td>
+                                    <td  scope="row">
+                                        <div class="slds-truncate">
+                                            <lightning:formattedNumber style ="currency" aura:id = "totalPrice"  value="{!lineItem.objQLI.Total_Unit_Price__c}" maximumFractionDigits="5" minimumFractionDigits="5"  formatter="currency" step="0.01"/>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </aura:iteration>
+                        </tbody>
+                    </table>
+                    
+                </aura:if>
+                <aura:set attribute="else">
+                    <aura:if isTrue="{!v.showScreen2}">
+                        <div class="slds-grid slds-gutters">
+                            <div class="slds-col slds-size_1-of-3" style="height:265px">
+                                <span>
+                                    <div class="slds-page-header slds-text-align_center" role="banner"> 
+                                        <h2><b>Customer Contact </b> <aura:if isTrue="{!not(v.editDM)}"> &nbsp; <lightning:buttonIcon iconName="utility:edit" variant="bare"  alternativeText="Edit" title="Edit" onclick="{!c.editContactRoleCustomer}" /><aura:set attribute="else">&nbsp;<lightning:buttonIcon iconName="utility:close"  variant="bare"  alternativeText="Cancel" title="Cancel" onclick="{!c.cancelEdit}" /></aura:set></aura:if></h2>
+                                    </div>
+                                    <br/>
+                                    <lightning:spinner class="slds-hide" variant="brand" size="small" aura:id="Spinner"/>
+                                    <aura:if isTrue="{!and(not(empty(v.customerContactRole)), v.editDM == false )}">
+                                        <lightning:tile label="{!v.customerContactRole.Role}" href="{! '/' + v.customerContactRole.ContactId}">
+                                            <aura:set attribute="media">
+                                                <lightning:icon iconName="standard:contact"/>
+                                            </aura:set>
+                                            <dl class="slds-dl_horizontal" style="font-size: 13px;">
+                                                <dt class="slds-dl_horizontal__label">
+                                                    <p class="slds-truncate" title="Company">Name:</p>
+                                                </dt>
+                                                <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                                    <p class="slds-truncate" title="{!v.customerContactRole.Contact.Name}">{!v.customerContactRole.Contact.Name}</p>
+                                                </dd>
+                                                <dt class="slds-dl_horizontal__label">
+                                                    <p class="slds-truncate" title="Email">Email:</p>
+                                                </dt>
+                                                <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                                    <p class="slds-truncate" title="{!v.customerContactRole.Contact.Email}">{!v.customerContactRole.Contact.Email}</p>
+                                                </dd>
+                                            </dl>
+                                        </lightning:tile>
+                                        <aura:set attribute="else">
+                                            <c:customLookup objectAPIName="contact" contactRole="Customer" accId="{!v.oppRecord.AccountId}" IconName="standard:contact" label="Contact" selectedRecord="{!v.selectedCustomerContact}"/>
+                                            <br/>
+                                        </aura:set>
+                                    </aura:if>
+                                </span>
+                            </div>
+                            <div class="slds-col slds-size_1-of-3" style="height:265px">
+                                <span>
+                                    <div class="slds-page-header slds-text-align_center" role="banner"> 
+                                        <h2><b>Broker Contact</b><aura:if isTrue="{!not(v.editBroker)}">&nbsp; <lightning:buttonIcon iconName="utility:edit" variant="bare"  alternativeText="Edit" title="Edit" onclick="{!c.editContactRole}" /><aura:set attribute="else">&nbsp;<lightning:buttonIcon iconName="utility:close"  variant="bare"  alternativeText="Cancel" title="Cancel" onclick="{!c.cancelEditBroker}" /></aura:set></aura:if></h2>
+                                    </div>
+                                    <br/>
+                                    <lightning:spinner class="slds-hide" variant="brand" size="small" aura:id="Spinner"/>
+                                    <aura:if isTrue="{!and(not(empty(v.brokerContactRole)),v.editBroker == false )}">
+                                        <lightning:tile label="{!v.brokerContactRole.Role}" href="{! '/' + v.brokerContactRole.ContactId}">
+                                            <aura:set attribute="media">
+                                                <lightning:icon iconName="standard:contact"/>
+                                            </aura:set>
+                                            <dl class="slds-dl_horizontal" style="font-size: 13px;">
+                                                <dt class="slds-dl_horizontal__label">
+                                                    <p class="slds-truncate" title="Company">Name:</p>
+                                                </dt>
+                                                <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                                    <p class="slds-truncate" title="{!v.brokerContactRole.Contact.Name}">{!v.brokerContactRole.Contact.Name}</p>
+                                                </dd>
+                                                <dt class="slds-dl_horizontal__label">
+                                                    <p class="slds-truncate" title="Email">Email:</p>
+                                                </dt>
+                                                <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                                    <p class="slds-truncate" title="{!v.brokerContactRole.Contact.Email}">{!v.brokerContactRole.Contact.Email}</p>
+                                                </dd>
+                                                
+                                            </dl>
+                                        </lightning:tile>
+                                        <aura:set attribute="else">
+                                            <c:customLookup objectAPIName="contact" contactRole="Broker" accId="{!v.oppRecord.Broker__c}" IconName="standard:contact" label="Contact" selectedRecord="{!v.selectedBrokerContact}"/>
+                                            <br/>
+                                            <aura:if isTrue="{!empty(v.brokerContactRole)}">
+                                                <div class="slds-form-element__help" id="">There is no Broker contact specified.</div>
+                                            </aura:if>
+                                        </aura:set>
+                                    </aura:if>
+                                </span>
+                            </div>
+                            <div class="slds-col slds-size_1-of-3" style="height:265px">
+                                <span>
+                                    <div class="slds-page-header slds-text-align_center" role="banner"> 
+                                        <h2><b>Agreement Delivery</b></h2>
+                                    </div>
+                                    <br/>
+                                    <lightning:radioGroup name="radioGroup"
+                                                          aura:id="agreementDelivery"
+                                                          label=""
+                                                          options="{! v.options }"
+                                                          value="{! v.agreementDelivery }"
+                                                          type="radio"/>
+                                </span>
+                            </div>
+                        </div>
+                    </aura:if>
+                    <aura:if isTrue="{!v.showScreen3}">
+                        
+                        <aura:if isTrue="{!and(v.Opp.IsValid == false,v.optionSelected != option1)}">
+                            <div style="padding-top: 6px;padding-bottom: 6px;margin-bottom:14px;" class="slds-box slds-theme_success slds-theme_alert-texture">
+                                <center>Please verify the following Opportunity fields</center>
+                            </div>
+                            <b> Opportunity Details :</b>&nbsp;&nbsp;&nbsp;&nbsp;  <b> Tax Exempt : <ui:outputCheckbox aura:id="output" value="{!v.Opp.TaxExempt}"/></b>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <b >Switching Type :</b>{!v.Opp.Switching_type}
+                            <aura:set attribute="else">
+                                
+                                <div style="padding-top: 6px;padding-bottom: 6px;margin-bottom:14px;" class="slds-box slds-theme_error slds-theme_alert-texture">
+                                    <center><b>Unable to Proceed</b></center>
+                                </div>
+                                
+                                <ul>
+                                    <li><b>Number of terms on synchronised Quote :</b>&nbsp; <span style="{!if(greaterthan(v.Opp.CountofTerms,1),'color:red;font-weight: bold;','')}">{!v.Opp.CountofTerms}</span></li>
+                                    <li><b>Please check for the missing fields below :</b></li>
+                                </ul>
+                                <div>
+                                    <table style="float:left;width:24.2%;margin-top:10px;"> 
+                                        <thead>
+                                            <tr class="slds-text-title_caps">
+                                                <th class="slds-page-header slds-text-align_center" role="banner" scope="col">
+                                                    <a href="{!'/one/one.app?#/sObject/'+ v.Opp.accId + '/view'}" target="_blank">  <lightning:icon iconName="standard:account" size="x-small"/>&nbsp;Account</a>
+                                                </th>
+                                                
+                                            </tr>
+                                            
+                                        </thead>   
+                                        <tbody> 
+                                            <aura:if isTrue="{!empty(v.Opp.missedFieldsLstAcc) == false}" >
+                                                <aura:iteration items="{!v.Opp.missedFieldsLstAcc}" var="misedField" indexVar="index">
+                                                    
+                                                    <tr>
+                                                        <td style="text-align: left;padding-left: 40%;padding-right: 20%;"> 
+                                                            {!index+1}. {!misedField}
+                                                        </td>
+                                                        
+                                                    </tr>
+                                                </aura:iteration>
+                                                <aura:set attribute="else">
+                                                    <center>
+                                                        <lightning:icon class="colgreen" style="margin-top: 5px" iconName="utility:check" size="x-small" /> 
+                                                    </center>
+                                                </aura:set>
+                                            </aura:if>
+                                        </tbody>
+                                    </table>
+                                    <table style="float:left;width:24.2%;margin-top:10px;margin-left:12.5px;" > 
+                                        <thead>
+                                            <tr class="slds-text-title_caps">
+                                                <th class="slds-page-header slds-text-align_center" role="banner" scope="col">
+                                                    <a href="{!'/one/one.app?#/sObject/'+ v.Opp.conId + '/view'}" target="_blank"> <lightning:icon iconName="standard:contact" size="x-small"/>&nbsp;Contact</a>
+                                                </th>
+                                                
+                                            </tr>
+                                            
+                                        </thead>   
+                                        <tbody> 
+                                            <aura:if isTrue="{!empty(v.Opp.missedFieldsLstContact) == false}" >
+                                                <aura:iteration items="{!v.Opp.missedFieldsLstContact}" var="misedField" indexVar="index">
+                                                    
+                                                    <tr>
+                                                        <td style="text-align: left;padding-left: 40%;padding-right: 20%;"> 
+                                                            {!index+1}.{!misedField}
+                                                        </td>
+                                                        
+                                                    </tr>
+                                                </aura:iteration>
+                                                <aura:set attribute="else">
+                                                    <center>
+                                                        <lightning:icon class="colgreen" style="margin-top: 5px" iconName="utility:check" size="x-small" /> 
+                                                    </center>
+                                                </aura:set>
+                                            </aura:if>
+                                        </tbody>
+                                    </table>
+                                    <table style="float:left;width:24.2%;margin-top:10px;margin-left:12.5px;" > 
+                                        <thead>
+                                            
+                                            <tr class="slds-text-title_caps">
+                                                <th class="slds-page-header slds-text-align_center" role="banner" scope="col">
+                                                    <a href="{!'/one/one.app?#/sObject/'+ v.Opp.oppId + '/view'}" target="_blank"> <lightning:icon iconName="standard:opportunity" size="x-small"/>&nbsp;Opportunity </a>
+                                                </th>
+                                                
+                                            </tr>
+                                            
+                                        </thead>   
+                                        <tbody>   
+                                            <aura:if isTrue="{!empty(v.Opp.missedFieldsLstOpp) == false}" >
+                                                <aura:iteration items="{!v.Opp.missedFieldsLstOpp}" var="misedField" indexVar="index">
+                                                    
+                                                    <tr>
+                                                        <td style="text-align: left;padding-left: 38%;padding-right: 20%;"> 
+                                                            {!index+1}.{!misedField}
+                                                        </td>
+                                                        
+                                                    </tr>
+                                                </aura:iteration>
+                                                <aura:set attribute="else">
+                                                    <center>
+                                                        <lightning:icon class="colgreen" style="margin-top: 5px" iconName="utility:check" size="x-small" /> 
+                                                    </center>
+                                                </aura:set>
+                                            </aura:if>
+                                        </tbody>
+                                    </table>
+                                    
+                                    <table style="float:left;width:24.2%;margin-top:10px;margin-left:12.52px;" > 
+                                        <thead>
+                                            <tr class="slds-text-title_caps">
+                                                <th class="slds-page-header slds-text-align_center" role="banner" scope="col">
+                                                    <a href="" aria-describedby="help" onmouseover="{!c.showToolTip}"><lightning:icon iconName="utility:info_alt" size="x-small"/>&nbsp;&nbsp;</a><lightning:icon iconName="custom:custom47" size="x-small"/>&nbsp;Utility Account
+                                                </th>
+                                                
+                                            </tr>
+                                        </thead>   
+                                        <tbody>      
+                                            
+                                            <center>
+                                                <aura:if isTrue="{!empty(v.Opp.missingLstUA) == false}" >
+                                                    <div style="padding-left:6px;padding-top:0rem;position:relative;height:60px;">
+                                                        
+                                                        <br/><b>One or more utility accounts missing mandatory fields</b>
+                                                        <br/><b>Missing Fields : </b> {!v.missedFields}
+                                                        <aura:if isTrue="{!v.tooltip}" >
+                                                            <div>
+                                                                <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                                                                    <div class="slds-modal__container" style="width:22% !important;margin-left:950px;">
+                                                                        <!-- Modal/Popup Box Header Starts here-->
+                                                                        <header class="slds-modal__header" style="border-top-left-radius: 12px;border-top-right-radius: 12px;background-color:#F5F5F5;">
+                                                                            
+                                                                            <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate"><lightning:icon iconName="custom:custom47" size="x-small"/>&nbsp;&nbsp;<b style="font-size:16px;margin-right: 30px;">UTILITY ACCOUNTS</b> <lightning:buttonIcon iconName="utility:close"
+                                                                                                                                                                                                                                                                                                                      onclick="{! c.HideToolTip }"
+                                                                                                                                                                                                                                                                                                                      alternativeText="close"
+                                                                                                                                                                                                                                                                                                                      variant="bare-inverse"
+                                                                                                                                                                                                                                                                                                                      class="abc abcd" /></h2>
+                                                                        </header>
+                                                                        <!--Modal/Popup Box Body Starts here-->
+                                                                        <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                                                                            <aura:iteration items="{!v.Opp.missedFieldsLstUA}" var="misedField" indexVar="index">
+                                                                                <p><b><div><td style="text-align: left;">{!index+1}.
+                                                                                    <a href="{!'/one/one.app?#/sObject/'+ misedField.Utility_Account__c + '/view'}" target="_blank" onclick="{!c.applyCSS}"> {!misedField.Utility_Account__r.Name}</a> 
+                                                                                    </td></div>
+                                                                                    </b>
+                                                                                </p>
+                                                                            </aura:iteration>
+                                                                        </div>
+                                                                        
+                                                                        
+                                                                    </div>
+                                                                </section>
+                                                            </div>
+                                                        </aura:if>
+                                                    </div>
+                                                    <aura:set attribute="else">
+                                                        <lightning:icon class="colgreen" style="margin-top: 5px" iconName="utility:check" size="x-small" /> 
+                                                    </aura:set>
+                                                </aura:if>
+                                                <tr>
+                                                </tr>
+                                            </center>
+                                            
+                                        </tbody>
+                                    </table>        
+                                </div>
+                                
+                                
+                            </aura:set>
+                        </aura:if>
+                    </aura:if>
+                </aura:set>
+            </aura:if>
+        </div>
+        <aura:if isTrue="{!v.validationError != ''}">
+            <div class="recordError">
+                {!v.validationError}
+            </div>
+        </aura:if>
+        <aura:set attribute="else">
+            <c:CustomSendEmail aura:id="sendEmailCmp" CountofTerms = "{!v.Opp.CountofTerms}" contact="{!v.brokerContactRole}" recordId="{!v.recordId}" term = "{!v.seletedTerm}" accountName="{!v.oppRecord.Account_Name__c}" customerContact="{!v.customerContactRole}" emailTemplateName="Send_Contract_For_Wet_Signature" />
+        </aura:set>
+    </aura:if>
+    <aura:if isTrue="{!v.Validated}">
+        
+        <aura:set attribute="else">
+            <div class="ValidationCSS slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info" role="alert">
+                <span class="slds-assistive-text">error</span>
+                <h2><b style="color:#ffc34d;">In order to proceed further</b><br /> <b>1. 4th decimal of total price should be either '4' or '9'</b><br /><b>2. 5th decimal of total price should be '0'</b></h2>
+            </div>
+        </aura:set>
+    </aura:if>
+    <aura:if isTrue="{!v.ValidateCreditCheck == true}">
+
+            <div class="ValidationCSS slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info" role="alert">
+                <span class="slds-assistive-text">error</span>
+                <h2 ><b ><lightning:icon iconName="utility:warning" class="fillColorWarning" size="x-small"/>&nbsp;&nbsp;The selected Quote requires a completed Credit Check </b><br /> <b>before a Customer Agreement can be created.</b></h2>
+            </div>
+    </aura:if>
+    
+    <div class="modal-footer slds-modal__footer slds-size_1-of-1">
+        <aura:if isTrue="{!v.showScreen1}">
+            <aura:if isTrue= "{!and(v.showOverRide,v.Validated == false)}">
+                <b> <lightning:input style="display:inline-block;" aura:id="CPR" type="checkbox" checked="" label="Override Price Validation" name="input2" onchange="{!c.allowNext}"/></b>
+            </aura:if>
+            <aura:if isTrue= "{!v.showOverRideNew}">
+                <b> <lightning:input style="display:inline-block;" aura:id="CPRNew" type="checkbox" checked="true" label="Override Price Validation" name="input2" onchange="{!c.allowNextNew}"/></b>
+            </aura:if>
+            <lightning:button variant="Brand" disabled="{!not(v.hasSelectedQLI)  || v.Validated == false || v.ValidateCreditCheck==true }" class="slds-button" label="Next" onclick="{!c.handleNext}"/>
+            <aura:set attribute="else">
+                <aura:if isTrue="{!and(v.sendEmail == false, v.showScreen3==false)}">
+                    <lightning:button variant="Brand"
+                                      disabled="{!and(equals(v.agreementDelivery, 'option1'), or(empty(v.brokerContactRole), empty(v.customerContactRole)))}" 
+                                      class="slds-button" 
+                                      label="Next" 
+                                      onclick="{!c.goToValidationScreen}"/>
+                    <aura:set attribute="else">
+                        <aura:if isTrue="{!v.showScreen3==false}">
+                            <lightning:button variant="Brand" disabled="" class="slds-button" label="Send" iconName="utility:send"  onclick="{!c.sendEmail}"/>
+                            <aura:set attribute="else">
+                                <aura:if isTrue="{!v.Opp.IsValid==false}">
+                                    <lightning:button variant="Brand"
+                                                      class="slds-button" 
+                                                      label="Next" 
+                                                      onclick="{!c.handleNextScreen2}"/>
+                                    <aura:set attribute="else">
+                                        <lightning:button variant="Brand"
+                                                          disabled="{!(empty(v.Opp.missedFieldsLstOpp) &amp;&amp; empty(v.Opp.missedFieldsLstAcc) &amp;&amp; empty(v.Opp.missedFieldsLstContact)) == false || greaterthan(v.Opp.CountofTerms,1) }" 
+                                                          class="slds-button" 
+                                                          label="Next" 
+                                                          onclick="{!c.refresht}"/>
+                                    </aura:set>
+                                </aura:if>
+                                
+                            </aura:set>
+                        </aura:if>
+                    </aura:set>
+                </aura:if>
+            </aura:set>
+        </aura:if>
+        <aura:if isTrue="{!v.showScreen3==false}">
+            <lightning:button variant="Neutral" class="slds-button" label="Cancel" onclick="{!c.handleClose}"/>
+        </aura:if>
+    </div>
+    
+</aura:component>

@@ -1,0 +1,99 @@
+.THIS .slds-truncate {
+    white-space: break-spaces;
+}
+.THIS .slds-select_container::before { }
+.THIS .slds-select_container::after {margin-bottom: 15px; }
+.THIS .slds-select_container .slds-select {margin-bottom: 15px;}
+.THIS .slds-file-selector{
+    display: flex;
+}
+.THIS .slds-file-selector__dropzone{
+    height: 100px;
+    width: -webkit-fill-available;
+    display: flex;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    margin: auto;
+}
+
+.THIS .slds-file-selector__dropzone .slds-file-selector__text{ /*the right label*/
+    font-size: 100%;
+}
+.THIS .slds-p-horizontal_small{
+    padding-left: var(--lwc-spacingSmall,0.75rem);
+    padding-right: var(--lwc-spacingSmall,0.75rem);
+}
+
+.THIS .slds-text-heading_small{
+    margin-left: 3px;
+}
+
+.THIS .clr {
+    color : red;
+}
+.THIS .icon-container svg{
+    height : 1.5rem;
+    width : 2rem;
+    margin-left : 9px;
+}
+.THIS .cardcss{
+    height : 10%;
+}
+
+.THIS .slds-file-selector__dropzone .slds-file-selector__button{
+    font-size: 0;
+}
+                                                
+                                                    
+.THIS .slds-file-selector__dropzone .slds-file-selector__button:after{
+    content: 'Upload File';
+    font-size: 13px;
+    color: rgba(27, 82, 151, 1.0);
+}
+
+
+.THIS .slds-file-selector_files .slds-file-selector__text{
+    font-size: 0;
+    margin: 61px 50px 0px 0px;
+}
+  
+.THIS .slds-file-selector_files .slds-file-selector__dropzone .slds-file-selector__text:after{
+    content: 'or Drop File';
+    font-size: 13px;
+    margin: 0px 16px 50px -100px;
+   }
+.THIS h2 {
+    display: none;
+}
+                                                
+.THIS.cFile_Uploader slot[interop-primitivefiledroppablezone_primitivefiledroppablezone] {
+display:block !important;
+ width:100% !important;
+}
+                                                
+.THIS.cFile_Uploader .slds-file-selector__dropzone, .THIS .slds-file-selector_files {
+   width:96.5% !important;
+  margin: 0 0 0 1.5% !important;
+}
+.THIS.cFile_Uploader .slds-file-selector__dropzone {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    margin: auto;
+}
+.THIS .slds-file-selector__dropzone {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    /* text-align: var(--lwc-spacingXxxSmall,0.125rem); */
+    border: var(--lwc-borderWidthThin,1px) dashed var(--lwc-colorBorder,rgb(221, 219, 218));
+    border-radius: var(--lwc-borderRadiusMedium,0.25rem);
+}
+.THIS .slds-file-selector_files .slds-file-selector__body {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+margin-left: 50px;
+}

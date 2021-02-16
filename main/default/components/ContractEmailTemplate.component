@@ -1,0 +1,16 @@
+<apex:component controller="ContractEmailTemplateController" >
+    <p align = "center">
+        <img src="{!$Resource.Logo}"  width="200px" height="168px"/>
+    </p>
+    
+    <apex:attribute name="oppIdValue" description="Attribute for Contract Id" type="String" assignTo="{!oppId}" />
+    Customer Name -  {!oppRecord.Account_Name__c} <br/>
+    Customer Id -  {!oppRecord.Account.Customer_ID__c}<br/>
+    StartDate - {!oppRecord.Start_Date__c}<br/>
+    Term Length -  {!oppRecord.OpportunityLineItems[0].Term_Months__c}<br/>
+    Cumulative Volume - {!oppRecord.OpportunityLineItems[0].Volume_kWh__c}<br/>
+    Broker Margin  - {!oppRecord.OpportunityLineItems[0].Broker_Margin_per_unit__c}<br/>
+    Unadjusted SEUS Margin - {!oppRecord.OpportunityLineItems[0].Sales_Margin_per_unit__c}<br/>
+    Final Contract Price - {!oppRecord.OpportunityLineItems[0].Total_Unit_Price__c}<br/>
+    
+</apex:component>

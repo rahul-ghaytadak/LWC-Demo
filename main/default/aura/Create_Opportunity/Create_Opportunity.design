@@ -1,0 +1,6 @@
+<design:component>
+	    <design:attribute name="recordId" label="recordId"/>
+	    <design:attribute name="reloadPage" label="reloadPage"/>
+    <design:attribute name="action" label="Navigation Action" 
+                      description="" />
+</design:component>
